@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Register — FoodShare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="stylesheet" href="assets/css/responsive.css" />
+<style>
+  .register-shell { padding-block: var(--space-7); }
+  .register-card { max-width: 560px; margin-inline: auto; }
+  fieldset { border: none; padding: 0; margin: 0 0 var(--space-5); }
+  legend { font-weight: 600; font-size: var(--fs-small); margin-bottom: var(--space-3); padding: 0; }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a href="index.html" class="navbar__brand">
+      <span class="navbar__brand-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 4 7 4 12c0 4 3 7 3 7h10s3-3 3-7c0-5-3-9-8-9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 3v16" stroke="currentColor" stroke-width="2"/></svg>
+      </span>
+      FoodShare
+    </a>
+    <div class="navbar__actions">
+      <span class="text-muted" style="font-size: var(--fs-small);">Already registered?</span>
+      <a href="login.html" class="btn btn--outline btn--sm">Log in</a>
+    </div>
+  </div>
+</header>
+
+<main class="register-shell">
+  <div class="container register-card">
+    <div class="card">
+      <h1 style="font-size: 1.75rem;">Create your account</h1>
+      <p class="text-muted" style="margin-bottom: 1.75rem;">Choose how you'll use FoodShare — the form adjusts to fit.</p>
+
+      <form data-register-form novalidate>
+
+        <fieldset>
+          <legend>I am registering as a</legend>
+          <div class="role-picker" role="radiogroup" aria-label="Account role">
+            <label class="role-picker__option">
+              <input type="radio" name="role" value="donor" class="visually-hidden" checked />
+              Donor
+            </label>
+            <label class="role-picker__option">
+              <input type="radio" name="role" value="recipient" class="visually-hidden" />
+              Recipient
+            </label>
+            <label class="role-picker__option">
+              <input type="radio" name="role" value="volunteer" class="visually-hidden" />
+              Volunteer
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Your details</legend>
+
+          <div class="field">
+            <label class="field__label" for="fullName">Full name</label>
+            <input type="text" id="fullName" name="fullName" required />
+            <span class="field__error">Enter your full name.</span>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label class="field__label" for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+              <span class="field__error">Enter a valid email address.</span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" placeholder="+880 1XXX-XXXXXX" required />
+              <span class="field__error">Enter a valid phone number.</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label class="field__label" for="password">Password</label>
+              <input type="password" id="password" name="password" minlength="6" required />
+              <span class="field__error">At least 6 characters.</span>
+            </div>
+            <div class="field">
+              <label class="field__label" for="confirmPassword">Confirm password</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required />
+              <span class="field__error">Passwords don't match.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="address">Address</label>
+            <input type="text" id="address" name="address" placeholder="Street, area, city" required />
+            <span class="field__error">Enter your address.</span>
+          </div>
+        </fieldset>
+
+        <fieldset data-role-fields="donor">
+          <legend>Donor details</legend>
+          <div class="form-row">
+            <div class="field">
+              <label class="field__label" for="donorType">Donor type</label>
+              <select id="donorType" name="donorType">
+                <option value="Individual">Individual</option>
+                <option value="Restaurant">Restaurant</option>
+                <option value="Caterer">Caterer</option>
+                <option value="Grocery Store">Grocery store</option>
+                <option value="Event Organizer">Event organizer</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="donorOrg">Organization name (optional)</label>
+              <input type="text" id="donorOrg" name="donorOrg" placeholder="e.g. Green Leaf Kitchen" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset data-role-fields="recipient" hidden>
+          <legend>Recipient details</legend>
+          <div class="form-row">
+            <div class="field">
+              <label class="field__label" for="recipientType">Recipient type</label>
+              <select id="recipientType" name="recipientType">
+                <option value="Individual">Individual</option>
+                <option value="NGO">NGO</option>
+                <option value="Shelter">Shelter</option>
+                <option value="Community Kitchen">Community kitchen</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="recipientOrg">Organization name (if applicable)</label>
+              <input type="text" id="recipientOrg" name="recipientOrg" placeholder="e.g. Hope Shelter Trust" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset data-role-fields="volunteer" hidden>
+          <legend>Volunteer details</legend>
+          <div class="form-row">
+            <div class="field">
+              <label class="field__label" for="vehicleType">Vehicle type</label>
+              <select id="vehicleType" name="vehicleType">
+                <option value="On foot">On foot</option>
+                <option value="Bicycle">Bicycle</option>
+                <option value="Motorbike">Motorbike</option>
+                <option value="Car">Car</option>
+                <option value="Van">Van</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="availability">Availability</label>
+              <input type="text" id="availability" name="availability" placeholder="e.g. Weekday evenings" />
+            </div>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn btn--primary btn--block btn--lg">Create account</button>
+        <p class="auth-card__meta">Already have an account? <a href="login.html">Log in</a></p>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/auth-demo.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  // Pre-select role from a query string like register.html?role=recipient
+  const params = new URLSearchParams(window.location.search);
+  const requestedRole = params.get("role");
+  if (requestedRole) {
+    const input = document.querySelector(`input[name="role"][value="${requestedRole}"]`);
+    if (input) input.checked = true;
+  }
+  document.querySelectorAll('input[name="role"]').forEach((input) => {
+    const option = input.closest(".role-picker__option");
+    const sync = () => option.classList.toggle("is-selected", input.checked);
+    input.addEventListener("change", () => {
+      document.querySelectorAll(".role-picker__option").forEach((el) => el.classList.remove("is-selected"));
+      sync();
+    });
+    sync();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — FoodShare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+<link rel="stylesheet" href="assets/css/responsive.css" />
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a href="index.html" class="navbar__brand">
+      <span class="navbar__brand-mark" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 4 7 4 12c0 4 3 7 3 7h10s3-3 3-7c0-5-3-9-8-9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 3v16" stroke="currentColor" stroke-width="2"/></svg>
+      </span>
+      FoodShare
+    </a>
+    <div class="navbar__actions">
+      <span class="text-muted" style="font-size: var(--fs-small);">New here?</span>
+      <a href="register.html" class="btn btn--primary btn--sm">Create account</a>
+    </div>
+  </div>
+</header>
+
+<main class="auth-shell">
+  <div class="auth-shell__panel">
+    <h2>Good food shouldn't go to waste.</h2>
+    <p>Sign in to post a donation, find food nearby, run a pickup, or manage the platform — whichever role fits you.</p>
+    <div style="display:flex; gap: 0.75rem; margin-top: 2rem; flex-wrap: wrap;">
+      <span class="badge badge--available" style="background: rgba(255,255,255,0.15); color: #fff;">Donor</span>
+      <span class="badge badge--available" style="background: rgba(255,255,255,0.15); color: #fff;">Recipient</span>
+      <span class="badge badge--available" style="background: rgba(255,255,255,0.15); color: #fff;">Volunteer</span>
+      <span class="badge badge--available" style="background: rgba(255,255,255,0.15); color: #fff;">Admin</span>
+    </div>
+  </div>
+
+  <div class="auth-shell__form">
+    <div class="auth-card">
+      <h1 style="font-size: 1.75rem;">Log in</h1>
+      <p class="text-muted" style="margin-bottom: 1.5rem;">Welcome back — enter your details to continue.</p>
+
+      <form data-login-form novalidate>
+        <div class="field">
+          <label class="field__label" for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required />
+          <span class="field__error">Enter a valid email address.</span>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6" />
+          <span class="field__error">Password must be at least 6 characters.</span>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 1.25rem;">
+          <label class="checkbox-row">
+            <input type="checkbox" name="rememberMe" />
+            Remember me
+          </label>
+          <a href="#" class="text-muted" style="font-size: var(--fs-small);" onclick="showToast('Password reset isn\'t wired up in this frontend-only build yet.'); return false;">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block btn--lg">Log in</button>
+      </form>
+
+      <div class="divider-with-label" id="demo">or preview a dashboard</div>
+
+      <div class="demo-login-list">
+        <button type="button" class="btn btn--outline" onclick="demoLoginAs('donor')">
+          <span>Demo login — Donor</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" class="btn btn--outline" onclick="demoLoginAs('recipient')">
+          <span>Demo login — Recipient</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" class="btn btn--outline" onclick="demoLoginAs('volunteer')">
+          <span>Demo login — Volunteer</span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" class="btn btn--outline" onclick="demoLoginAs('admin')">
+          <span>Demo login — Admin</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+
+      <p class="auth-card__meta">Don't have an account? <a href="register.html">Register</a></p>
+    </div>
+  </div>
+</main>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/auth-demo.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
