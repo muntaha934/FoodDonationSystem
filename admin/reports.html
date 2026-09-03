@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin Dashboard — FoodShare</title>
+<title>Reports — FoodShare</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -23,11 +23,10 @@
       </span>
       FoodShare
     </a>
-
     <nav class="dashboard-sidebar__nav">
       <div class="dashboard-sidebar__section-label">Admin</div>
       <ul>
-        <li><a href="dashboard.html" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Dashboard</a></li>
+        <li><a href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Dashboard</a></li>
         <li><a href="users.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="2"/><path d="M3 20c1.2-3.4 4-5 6-5s4.8 1.6 6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17.5" cy="8.5" r="2.3" stroke="currentColor" stroke-width="2"/><path d="M15.5 13.2c2.3.3 4 1.6 4.8 3.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Users</a></li>
         <li><a href="donations.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Donations</a></li>
         <li><a href="#" onclick="showToast('Requests page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Requests</a></li>
@@ -36,11 +35,10 @@
         <li><a href="#" onclick="showToast('Feedback page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.5 6.3L12 16.9 6.3 20.1l1.5-6.3L3 9.5l6.4-.6L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Feedback</a></li>
         <li><a href="#" onclick="showToast('Notifications page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2"/></svg>Notifications</a></li>
         <li><a href="audit-logs.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5h10v16H5V9l4-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 5v4H5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Audit Logs</a></li>
-        <li><a href="reports.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 19V9m4 10V5m4 14v-7m4 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Reports</a></li>
+        <li><a href="reports.html" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 19V9m4 10V5m4 14v-7m4 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Reports</a></li>
         <li><a href="#" onclick="showToast('Profile page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profile</a></li>
       </ul>
     </nav>
-
     <div class="dashboard-sidebar__footer">
       <button class="dashboard-sidebar__logout" onclick="logout()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -55,7 +53,7 @@
         <button class="dashboard-topbar__toggle" data-sidebar-toggle aria-label="Toggle menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <span class="dashboard-topbar__title">Admin Dashboard</span>
+        <span class="dashboard-topbar__title">Reports</span>
       </div>
       <div class="dashboard-topbar__actions">
         <div class="topbar-avatar" id="topbar-avatar">A</div>
@@ -65,19 +63,42 @@
     <main class="dashboard-content">
       <div class="dashboard-content__head">
         <div>
-          <h2 id="welcome-heading" style="margin-bottom: 0.25rem;">Welcome back</h2>
-          <p class="text-muted">A system-wide view of everything happening on FoodShare.</p>
+          <h2 style="margin-bottom: 0.25rem;">Reports</h2>
+          <p class="text-muted">Built from this demo's mock data — structured so real SQL query results can drop in later without changing the layout.</p>
         </div>
       </div>
 
-      <div class="stat-grid" id="stat-grid"></div>
-
-      <div class="card">
-        <div class="section-head">
-          <h3>Donation status distribution</h3>
+      <div class="report-grid">
+        <div class="card">
+          <h3>Food saved by donor</h3>
+          <div class="bar-chart" id="report-saved-by-donor"></div>
         </div>
-        <div class="bar-chart" id="status-distribution-chart"></div>
-        <p class="text-muted" id="dashboard-data-note" style="margin-top: var(--space-4); margin-bottom: 0; font-size: var(--fs-xsmall);"></p>
+
+        <div class="card">
+          <h3>Food wasted by category</h3>
+          <div class="bar-chart" id="report-wasted-by-category"></div>
+        </div>
+
+        <div class="card">
+          <h3>Donation status distribution</h3>
+          <div class="bar-chart" id="report-status-distribution"></div>
+        </div>
+
+        <div class="card">
+          <h3>Volunteer performance</h3>
+          <p class="text-muted" style="font-size: var(--fs-xsmall); margin-bottom: var(--space-3);">Completed deliveries per volunteer.</p>
+          <div class="bar-chart" id="report-volunteer-performance"></div>
+        </div>
+
+        <div class="card">
+          <h3>Monthly donation trend</h3>
+          <div class="bar-chart" id="report-monthly-trend"></div>
+        </div>
+
+        <div class="card">
+          <h3>Completed vs. expired donations</h3>
+          <div class="bar-chart" id="report-completed-vs-expired"></div>
+        </div>
       </div>
     </main>
   </div>
@@ -89,7 +110,7 @@
 <script src="../assets/js/donations.js"></script>
 <script src="../assets/js/admin.js"></script>
 <script>
-  initAdminDashboard();
+  initReportsPage();
 </script>
 </body>
 </html>

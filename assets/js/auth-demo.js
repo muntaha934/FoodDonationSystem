@@ -183,6 +183,8 @@ function initRegisterForm() {
       email,
       phone,
       address,
+      status: "active",
+      registeredAt: new Date().toISOString(),
     };
 
     if (role === "donor") {

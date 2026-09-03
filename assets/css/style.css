@@ -338,11 +338,15 @@ textarea { resize: vertical; min-height: 90px; }
 
 .badge--available { background: var(--color-success-tint); color: var(--color-success); }
 .badge--pending    { background: var(--color-accent-tint); color: var(--color-accent-dark); }
+.badge--pickup-pending { background: var(--color-accent-tint); color: var(--color-accent-dark); }
+.badge--assigned   { background: var(--color-info-tint); color: var(--color-info); }
 .badge--claimed    { background: var(--color-info-tint); color: var(--color-info); }
 .badge--picked-up  { background: var(--color-info-tint); color: var(--color-info); }
+.badge--in-transit { background: var(--color-accent-tint); color: var(--color-accent-dark); }
 .badge--delivered  { background: var(--color-success-tint); color: var(--color-success); }
 .badge--expired    { background: var(--color-danger-tint); color: var(--color-danger); }
 .badge--cancelled  { background: var(--color-surface-sunken); color: var(--color-muted); }
+.badge--rejected   { background: var(--color-danger-tint); color: var(--color-danger); }
 
 /* ---------- 8. Toast notifications ---------- */
 .toast-region {

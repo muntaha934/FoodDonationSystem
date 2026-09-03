@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Recipient Dashboard — FoodShare</title>
+<title>My Requests — FoodShare</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -23,13 +23,12 @@
       </span>
       FoodShare
     </a>
-
     <nav class="dashboard-sidebar__nav">
       <div class="dashboard-sidebar__section-label">Recipient</div>
       <ul>
-        <li><a href="dashboard.html" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Dashboard</a></li>
+        <li><a href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Dashboard</a></li>
         <li><a href="find-food.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Find Food</a></li>
-        <li><a href="requests.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>My Requests</a></li>
+        <li><a href="requests.html" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>My Requests</a></li>
         <li><a href="requests.html?status=accepted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Active Claims</a></li>
         <li><a href="requests.html?status=completed"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Completed</a></li>
         <li><a href="#" onclick="showToast('Notifications page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2"/></svg>Notifications</a></li>
@@ -37,7 +36,6 @@
         <li><a href="#" onclick="showToast('Profile page is coming in a later phase.'); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profile</a></li>
       </ul>
     </nav>
-
     <div class="dashboard-sidebar__footer">
       <button class="dashboard-sidebar__logout" onclick="logout()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -52,13 +50,9 @@
         <button class="dashboard-topbar__toggle" data-sidebar-toggle aria-label="Toggle menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
-        <span class="dashboard-topbar__title">Recipient Dashboard</span>
+        <span class="dashboard-topbar__title">My Requests</span>
       </div>
       <div class="dashboard-topbar__actions">
-        <button class="icon-btn" aria-label="Notifications" onclick="showToast('Notifications page is coming in a later phase.')">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2"/></svg>
-          <span class="icon-btn__dot" id="notif-dot" hidden></span>
-        </button>
         <div class="topbar-avatar" id="topbar-avatar">R</div>
       </div>
     </header>
@@ -66,22 +60,33 @@
     <main class="dashboard-content">
       <div class="dashboard-content__head">
         <div>
-          <h2 id="welcome-heading" style="margin-bottom: 0.25rem;">Welcome back</h2>
-          <p class="text-muted">Here's food available nearby and the status of your requests.</p>
+          <h2 style="margin-bottom: 0.25rem;">My Requests</h2>
+          <p class="text-muted">Every donation you've requested, and where it stands.</p>
         </div>
-        <a href="find-food.html" class="btn btn--primary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-          Find Food
-        </a>
+        <a href="find-food.html" class="btn btn--primary">Find more food</a>
       </div>
 
-      <div class="stat-grid" id="stat-grid"></div>
-
       <div class="card">
-        <div class="section-head">
-          <h3>Recent activity</h3>
+        <div class="filter-bar">
+          <div class="field">
+            <select id="filter-my-request-status" aria-label="Filter by status">
+              <option value="">All requests</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Active claims</option>
+              <option value="completed">Completed</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
         </div>
-        <div class="activity-list" id="activity-list"></div>
+
+        <div id="my-requests-empty" class="empty-state" hidden>
+          <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <h3>No requests here yet</h3>
+          <p>Browse Find Food and request a donation to see it appear in this list.</p>
+          <a href="find-food.html" class="btn btn--primary btn--sm">Find Food</a>
+        </div>
+
+        <div class="table-wrap" id="my-requests-table-wrap"></div>
       </div>
     </main>
   </div>
@@ -90,62 +95,12 @@
 <script src="../assets/js/mock-data.js"></script>
 <script src="../assets/js/auth-demo.js"></script>
 <script src="../assets/js/app.js"></script>
+<script src="../assets/js/donations.js"></script>
+<script src="../assets/js/find-food.js"></script>
 <script>
-  const recipient = requireRole("recipient");
-
-  if (recipient) {
-    document.getElementById("welcome-heading").textContent = `Welcome back, ${recipient.name.split(" ")[0]}`;
-    document.getElementById("topbar-avatar").textContent = recipient.name.charAt(0).toUpperCase();
-
-    const nearby = getDonations({ status: "available" }).length;
-    const myRequests = getRequests({ recipientId: recipient.userId });
-    const active = myRequests.filter((r) => r.status === "pending").length;
-
-    const donationsById = Object.fromEntries(getDonations().map((d) => [d.donationId, d]));
-    const accepted = myRequests.filter((r) => r.status === "accepted" && donationsById[r.donationId]?.status !== "delivered").length;
-    const completedRequests = myRequests.filter((r) => r.status === "accepted" && donationsById[r.donationId]?.status === "delivered");
-    const savedQuantity = completedRequests.reduce((sum, r) => sum + (r.requestedQuantity || 0), 0);
-
-    const stats = [
-      { label: "Available nearby", value: nearby },
-      { label: "Active requests", value: active },
-      { label: "Accepted requests", value: accepted },
-      { label: "Completed donations", value: completedRequests.length },
-      { label: "Food received (units)", value: savedQuantity },
-    ];
-
-    document.getElementById("stat-grid").innerHTML = stats
-      .map(
-        (s) => `
-      <div class="stat-card">
-        <div class="stat-card__label">${s.label}</div>
-        <div class="stat-card__value">${s.value}</div>
-      </div>`
-      )
-      .join("");
-
-    const notifications = getNotifications(recipient.userId);
-    if (notifications.some((n) => !n.isRead)) document.getElementById("notif-dot").hidden = false;
-
-    const activityList = document.getElementById("activity-list");
-    if (notifications.length === 0) {
-      activityList.innerHTML = `<div class="empty-state"><p>No recent activity yet.</p></div>`;
-    } else {
-      activityList.innerHTML = notifications
-        .slice(0, 6)
-        .map(
-          (n) => `
-        <div class="activity-item">
-          <span class="activity-item__dot"></span>
-          <div>
-            <div>${n.message}</div>
-            <div class="activity-item__meta">${formatDateTime(n.createdAt)}</div>
-          </div>
-        </div>`
-        )
-        .join("");
-    }
-  }
+  const session = getSession();
+  if (session) document.getElementById("topbar-avatar").textContent = session.name.charAt(0).toUpperCase();
+  initMyRequestsPage();
 </script>
 </body>
 </html>

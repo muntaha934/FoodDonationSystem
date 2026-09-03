@@ -6,7 +6,7 @@ currently contains **Phase 1: the public frontend shell** — no PHP,
 no MySQL yet. Everything runs on HTML, CSS, and vanilla JavaScript,
 with mock data standing in for the database.
 
-## What's in Phase 1 + Phase 2
+## What's in Phase 1 through Phase 5
 
 | Area | File(s) |
 |---|---|
@@ -15,17 +15,25 @@ with mock data standing in for the database.
 | Registration page (role-adaptive) | `register.html` |
 | Design system (tokens, buttons, forms, cards, badges, modal, toast, table, navbar, footer) | `assets/css/style.css` |
 | Responsive rules (tablet/mobile/small-phone) | `assets/css/responsive.css` |
-| Dashboard shell (sidebar, topbar, stat cards, filter bar, timeline, pagination) | `assets/css/dashboard.css` |
+| Dashboard shell (sidebar, topbar, stat cards, filter bar, timeline, pagination, donation cards, bar charts) | `assets/css/dashboard.css` |
 | Shared UI behaviour (nav + sidebar toggle, toasts, modals, formatting helpers) | `assets/js/app.js` |
 | Mock data + data-access functions | `assets/js/mock-data.js` |
 | Demo "auth" (session, role guard, demo login, login/register forms) | `assets/js/auth-demo.js` |
-| **Donor dashboard** — stats + recent activity | `donor/dashboard.html` |
-| **My Donations** — search/filter/sort table | `donor/donations.html` |
-| **Create Donation** — validated form | `donor/create-donation.html` |
-| **Donation Details** — full info + timeline | `donor/donation-details.html` |
-| **Requests** — accept/reject incoming requests | `donor/requests.html` |
+| **Donor dashboard, My Donations, Create Donation, Donation Details, Requests** | `donor/*.html` |
 | Donor page logic | `assets/js/donations.js`, `assets/js/requests.js` |
-| Placeholder dashboards for the other 3 roles (built out in Phases 3–5) | `recipient/dashboard.html`, `volunteer/dashboard.html`, `admin/dashboard.html` |
+| **Recipient dashboard, Find Food, Food Details/Request, My Requests** | `recipient/*.html` |
+| Recipient page logic | `assets/js/find-food.js` |
+| **Volunteer dashboard, Pickup Assignments, Delivery History, Pickup Details** | `volunteer/*.html` |
+| Volunteer page logic | `assets/js/pickups.js` |
+| **Admin dashboard** — system stats + status distribution chart | `admin/dashboard.html` |
+| **User Management** — search/filter, Activate/Deactivate | `admin/users.html` |
+| **Donation Management** — every donation, all donors | `admin/donations.html` |
+| **Waste Log** — summary cards + expired/unclaimed donations | `admin/waste-logs.html` |
+| **Audit Log** — chronological system/action history | `admin/audit-logs.html` |
+| **Reports** — 6 vanilla bar-chart reports (saved by donor, wasted by category, status distribution, volunteer performance, monthly trend, completed vs. expired) | `admin/reports.html` |
+| Admin page logic | `assets/js/admin.js` |
+
+All four roles now have a complete frontend. What's left is polish, the still-stubbed pages (Notifications, Feedback, Profile, and a few admin sidebar items), and the eventual PHP/MySQL backend.
 
 ## How to run it
 
@@ -118,21 +126,38 @@ testing or for logging in on the login form directly:
 
 ## What's next
 
-- ~~**Phase 2** — Donor frontend: dashboard, Create Donation, My
-  Donations, Donation Details.~~ ✅ Done
-- **Phase 3** — Recipient frontend: dashboard, Find Food, Food
-  Details/Request.
-- **Phase 4** — Volunteer frontend: dashboard, Pickup Assignments,
-  Pickup Details.
-- **Phase 5** — Admin frontend: dashboard, User/Donation
-  Management, Waste Logs, Audit Logs, Reports.
+- ~~**Phase 2** — Donor frontend.~~ ✅ Done
+- ~~**Phase 3** — Recipient frontend.~~ ✅ Done
+- ~~**Phase 4** — Volunteer frontend.~~ ✅ Done
+- ~~**Phase 5** — Admin frontend: dashboard, User/Donation
+  Management, Waste Logs, Audit Logs, Reports.~~ ✅ Done
 - **Phase 6** — Shared interactions, deeper validation, polishing
-  (this is also where Pickup Status, Notifications, Feedback, and
-  Profile pages — currently "coming soon" links in the donor
-  sidebar — get built for real).
+  (this is also where Notifications, Feedback, Profile, and the
+  admin Requests/Pickup Assignments pages — currently "coming
+  soon" links in the sidebars — get built for real).
 - **Phase 7** — Prepare the frontend for PHP/MySQL integration
   (swap the inside of the `mock-data.js` functions for `fetch()`
   calls to PHP endpoints backed by the 15-table schema).
+
+## The full lifecycle now works end to end in the demo
+
+1. **Donor** posts a donation (Create Donation).
+2. **Recipient** finds it (Find Food) and requests it (Food
+   Details / Request).
+3. **Donor** accepts the request (Requests page) — the donation
+   flips to "claimed".
+4. **Volunteer** sees it under Available Assignments and claims it
+   — a PickupAssignment is created.
+5. **Volunteer** advances it through Confirm Pickup → Mark In
+   Transit → Mark Delivered (Pickup Details) — the donation flips
+   to "delivered".
+6. **Admin** sees all of it reflected live across Dashboard,
+   Donation Management, Waste Logs, and Reports — nothing on the
+   admin side is separately maintained data.
+
+Try it by demo-logging in as each role in turn and following one
+donation through the whole chain, then check the Admin dashboard
+to see the same numbers show up there.
 
 ## Folder structure
 
@@ -150,24 +175,36 @@ food-waste-management/
 │   ├── donation-details.html  (full details + timeline)
 │   └── requests.html          (accept/reject incoming requests)
 ├── recipient/
-│   └── dashboard.html        (placeholder — full page in Phase 3)
+│   ├── dashboard.html         (stats + recent activity)
+│   ├── find-food.html         (browsable card grid + filters)
+│   ├── food-details.html      (full details + request form)
+│   └── requests.html          (My Requests / Active Claims / Completed)
 ├── volunteer/
-│   └── dashboard.html        (placeholder — full page in Phase 4)
+│   ├── dashboard.html         (stats + recent activity)
+│   ├── assignments.html       (Available Assignments + My Pickups)
+│   ├── history.html           (Delivery History)
+│   └── pickup-details.html    (info + timeline + status actions)
 ├── admin/
-│   └── dashboard.html        (placeholder — full page in Phase 5)
+│   ├── dashboard.html         (system stats + status chart)
+│   ├── users.html             (User Management)
+│   ├── donations.html         (Donation Management)
+│   ├── waste-logs.html        (Waste Log + summary cards)
+│   ├── audit-logs.html        (Audit Log)
+│   └── reports.html           (6 vanilla bar-chart reports)
 │
 └── assets/
     ├── css/
     │   ├── style.css         (design system + shared components)
     │   ├── responsive.css    (tablet/mobile/small-phone breakpoints)
-    │   └── dashboard.css     (sidebar/topbar dashboard shell + stat cards)
+    │   └── dashboard.css     (sidebar/topbar shell, stat cards, donation cards, bar charts)
     ├── js/
     │   ├── app.js            (nav + sidebar toggle, toasts, modals, formatters)
     │   ├── mock-data.js       (seed data + data-access functions)
     │   ├── auth-demo.js      (session, role guard, demo login, login/register forms)
-    │   ├── donations.js      (My Donations table, Create Donation form, Details page)
-    │   └── requests.js       (donor Requests page — accept/reject)
+    │   ├── donations.js      (donor: My Donations, Create Donation, Details)
+    │   ├── requests.js       (donor: Requests — accept/reject)
+    │   ├── find-food.js      (recipient: Find Food, Food Details/Request, My Requests)
+    │   ├── pickups.js        (volunteer: Assignments, History, Pickup Details)
+    │   └── admin.js          (admin: dashboard, Users, Donations, Waste/Audit Logs, Reports)
     └── images/                (empty — for donation photos etc.)
 ```
-#   F o o d D o n a t i o n S y s t e m  
- 

@@ -439,6 +439,140 @@
 .timeline li strong { display: block; font-size: var(--fs-small); }
 .timeline li span { font-size: var(--fs-xsmall); color: var(--color-muted); }
 
+/* ---------- Donation cards (Find Food grid) ---------- */
+.donation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-5);
+}
+
+.donation-card {
+  background: var(--color-surface);
+  border: var(--border-hairline);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--duration-medium) var(--ease-standard),
+              box-shadow var(--duration-medium) var(--ease-standard);
+}
+
+@media (hover: hover) {
+  .donation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(31, 75, 63, 0.1);
+  }
+}
+
+.donation-card__image {
+  height: 140px;
+  background: var(--color-accent-tint);
+  display: grid;
+  place-items: center;
+  font-size: 2.75rem;
+  position: relative;
+}
+
+.donation-card__flag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.donation-card__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.donation-card__title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.donation-card__meta {
+  font-size: var(--fs-small);
+  color: var(--color-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.donation-card__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donation-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.donation-card__actions .btn { flex: 1; }
+
+/* ---------- Simple vanilla bar charts (no chart library) ---------- */
+.bar-chart { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.bar-chart-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bar-chart-row__label {
+  width: 150px;
+  flex-shrink: 0;
+  font-size: var(--fs-small);
+  color: var(--color-ink-soft);
+  white-space: normal;
+}
+
+.bar-chart-row__track {
+  flex: 1;
+  background: var(--color-surface-sunken);
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.bar-chart-row__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-primary);
+  transition: width var(--duration-medium) var(--ease-standard);
+}
+
+.bar-chart-row__fill--accent { background: var(--color-accent); }
+.bar-chart-row__fill--danger { background: var(--color-danger); }
+.bar-chart-row__fill--info { background: var(--color-info); }
+
+.bar-chart-row__value {
+  width: 56px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: var(--fs-xsmall);
+  color: var(--color-muted);
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.summary-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
 /* ---------- Responsive: dashboard shell ---------- */
 @media (max-width: 1024px) {
   .dashboard-shell { grid-template-columns: 1fr; }
@@ -463,6 +597,7 @@
 
   .stat-grid { grid-template-columns: 1fr 1fr; }
   .details-grid { grid-template-columns: 1fr; }
+  .report-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {
@@ -473,6 +608,9 @@
   .stat-card__value { font-size: 1.5rem; }
   .filter-bar .field { min-width: 0; flex: 1 1 140px; }
   .food-thumb--lg { height: 180px; }
+  .donation-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-4); }
+  .summary-card-grid { grid-template-columns: 1fr; }
+  .bar-chart-row__label { width: 100px; font-size: var(--fs-xsmall); }
 }
 
 @media (max-width: 480px) {
@@ -480,5 +618,6 @@
   .dashboard-topbar__title { font-size: 1rem; }
   .dashboard-content__head { flex-direction: column; align-items: stretch; }
   .dashboard-content__head .btn { width: 100%; }
+  .donation-grid { grid-template-columns: 1fr; }
 }
 
