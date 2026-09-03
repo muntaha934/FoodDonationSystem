@@ -27,6 +27,12 @@
    these functions needs to change (swap localStorage reads for
    fetch() calls to api/*.php). Every page that already calls
    getDonations() etc. keeps working unmodified.
+
+   See API_INTEGRATION.md at the project root for the full
+   function-by-function map to future PHP endpoints, request/
+   response shapes, and which of the 15 tables each one touches.
+   assets/js/api-config.js has the (currently unused) fetch
+   wrapper that migrated functions will call.
    ========================================================= */
 
 const DB_KEY = "fw_db_v1";
@@ -537,6 +543,7 @@ function genId(prefix) {
    Keeping the same function names/shapes means pages will not
    need to change when that swap happens.                     */
 
+// See API_INTEGRATION.md §3 (Food Categories)
 function getFoodCategories() {
   return loadDb().foodCategories;
 }
@@ -546,6 +553,7 @@ function getCategoryName(categoryId) {
   return category ? category.name : "Uncategorized";
 }
 
+// See API_INTEGRATION.md §4 (Donations)
 function getDonations(filters = {}) {
   let list = loadDb().donations;
   if (filters.status) list = list.filter((d) => d.status === filters.status);
@@ -582,6 +590,7 @@ function updateDonationStatus(donationId, status) {
   return donation || null;
 }
 
+// See API_INTEGRATION.md §5 (Requests)
 function getRequests(filters = {}) {
   let list = loadDb().requests;
   if (filters.donationId) list = list.filter((r) => r.donationId === filters.donationId);
@@ -617,6 +626,7 @@ function updateRequestStatus(requestId, status) {
   return req || null;
 }
 
+// See API_INTEGRATION.md §6 (Pickup Assignments)
 function getPickupAssignments(filters = {}) {
   let list = loadDb().pickupAssignments;
   if (filters.volunteerId) list = list.filter((p) => p.volunteerId === filters.volunteerId);
@@ -665,6 +675,7 @@ function updatePickupStatus(assignmentId, status) {
   return a || null;
 }
 
+// See API_INTEGRATION.md §9 (Notifications)
 function getNotifications(userId) {
   return loadDb()
     .notifications.filter((n) => n.userId === userId)
@@ -681,16 +692,32 @@ function markNotificationRead(notificationId) {
   return n || null;
 }
 
+// See API_INTEGRATION.md §8 (Feedback)
 function getFeedback(filters = {}) {
   let list = loadDb().feedback;
   if (filters.toUserId) list = list.filter((f) => f.toUserId === filters.toUserId);
+  if (filters.fromUserId) list = list.filter((f) => f.fromUserId === filters.fromUserId);
   return list;
 }
 
+function createFeedback(feedback) {
+  const db = loadDb();
+  const record = {
+    feedbackId: genId("F"),
+    createdAt: new Date().toISOString(),
+    ...feedback,
+  };
+  db.feedback.unshift(record);
+  saveDb(db);
+  return record;
+}
+
+// See API_INTEGRATION.md §7 (Waste Log)
 function getWasteLogs() {
   return loadDb().wasteLogs;
 }
 
+// See API_INTEGRATION.md §2 (Users) and §1 (Auth)
 function getUsers() {
   return loadDb().users;
 }
@@ -705,6 +732,7 @@ function updateUserStatus(userId, status) {
   return user || null;
 }
 
+// See API_INTEGRATION.md §10 (Audit Log)
 function getAuditLogs() {
   return [...loadDb().auditLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
@@ -715,4 +743,14 @@ function getUserByEmail(email) {
 
 function getUserByRole(role) {
   return loadDb().users.find((u) => u.role === role) || null;
+}
+
+function updateUserProfile(userId, updates) {
+  const db = loadDb();
+  const user = db.users.find((u) => u.userId === userId);
+  if (user) {
+    Object.assign(user, updates);
+    saveDb(db);
+  }
+  return user || null;
 }

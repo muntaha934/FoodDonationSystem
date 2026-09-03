@@ -10,9 +10,6 @@
 <link rel="stylesheet" href="../assets/css/style.css" />
 <link rel="stylesheet" href="../assets/css/responsive.css" />
 <link rel="stylesheet" href="../assets/css/dashboard.css" />
-<style>
-  #available-assignments-list { display: flex; flex-direction: column; gap: var(--space-3); }
-</style>
 </head>
 <body>
 
@@ -26,17 +23,24 @@
       </span>
       FoodShare
     </a>
+
     <nav class="dashboard-sidebar__nav">
-      <div class="dashboard-sidebar__section-label">Volunteer</div>
+      <div class="dashboard-sidebar__section-label">Admin</div>
       <ul>
         <li><a href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="2"/></svg>Dashboard</a></li>
-        <li><a href="assignments.html#available" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Available Assignments</a></li>
-        <li><a href="assignments.html#my-pickups"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="1" y="7" width="13" height="9" rx="1" stroke="currentColor" stroke-width="2"/><path d="M14 10h4l3 3v3h-7v-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="18" r="1.6" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="18" r="1.6" stroke="currentColor" stroke-width="2"/></svg>My Pickups</a></li>
-        <li><a href="history.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>Delivery History</a></li>
+        <li><a href="users.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="2"/><path d="M3 20c1.2-3.4 4-5 6-5s4.8 1.6 6 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17.5" cy="8.5" r="2.3" stroke="currentColor" stroke-width="2"/><path d="M15.5 13.2c2.3.3 4 1.6 4.8 3.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Users</a></li>
+        <li><a href="donations.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7l9-4 9 4-9 4-9-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7M12 11v10" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Donations</a></li>
+        <li><a href="requests.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Requests</a></li>
+        <li><a href="pickup-assignments.html" class="is-active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="1" y="7" width="13" height="9" rx="1" stroke="currentColor" stroke-width="2"/><path d="M14 10h4l3 3v3h-7v-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="18" r="1.6" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="18" r="1.6" stroke="currentColor" stroke-width="2"/></svg>Pickup Assignments</a></li>
+        <li><a href="waste-logs.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 19V9m4 10V5m4 14v-7m4 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Waste Logs</a></li>
+        <li><a href="feedback.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.5 6.3L12 16.9 6.3 20.1l1.5-6.3L3 9.5l6.4-.6L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>Feedback</a></li>
         <li><a href="notifications.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="2"/></svg>Notifications</a></li>
+        <li><a href="audit-logs.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5h10v16H5V9l4-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 5v4H5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Audit Logs</a></li>
+        <li><a href="reports.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M6 19V9m4 10V5m4 14v-7m4 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Reports</a></li>
         <li><a href="profile.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Profile</a></li>
       </ul>
     </nav>
+
     <div class="dashboard-sidebar__footer">
       <button class="dashboard-sidebar__logout" onclick="logout()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -54,7 +58,7 @@
         <span class="dashboard-topbar__title">Pickup Assignments</span>
       </div>
       <div class="dashboard-topbar__actions">
-        <div class="topbar-avatar" id="topbar-avatar">V</div>
+        <div class="topbar-avatar" id="topbar-avatar">A</div>
       </div>
     </header>
 
@@ -62,37 +66,17 @@
       <div class="dashboard-content__head">
         <div>
           <h2 style="margin-bottom: 0.25rem;">Pickup Assignments</h2>
-          <p class="text-muted">Claim an open pickup, or check the status of the ones you already have.</p>
+          <p class="text-muted">Every pickup assignment across the platform, from every volunteer.</p>
         </div>
       </div>
 
-      <div id="available" style="margin-bottom: var(--space-7);">
-        <div class="section-head">
-          <h3>Available Assignments</h3>
+      <div class="card">
+        <div id="admin-pickups-empty" class="empty-state" hidden>
+          <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none"><rect x="1" y="7" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M14 10h4l3 3v3h-7v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <h3>No pickup assignments yet</h3>
+          <p>Assignments will appear here once volunteers start claiming pickups.</p>
         </div>
-
-        <div id="available-assignments-empty" class="empty-state card" hidden>
-          <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <h3>No open assignments right now</h3>
-          <p>When a recipient's request is accepted by a donor, it'll appear here for a volunteer to claim.</p>
-        </div>
-
-        <div id="available-assignments-list"></div>
-      </div>
-
-      <div id="my-pickups">
-        <div class="section-head">
-          <h3>My Pickups</h3>
-        </div>
-
-        <div class="card">
-          <div id="my-pickups-empty" class="empty-state" hidden>
-            <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none"><rect x="1" y="7" width="13" height="9" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M14 10h4l3 3v3h-7v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <h3>No active pickups</h3>
-            <p>Accept an assignment above to see it here.</p>
-          </div>
-          <div class="table-wrap" id="my-pickups-table-wrap"></div>
-        </div>
+        <div class="table-wrap" id="admin-pickups-table-wrap"></div>
       </div>
     </main>
   </div>
@@ -102,11 +86,9 @@
 <script src="../assets/js/auth-demo.js"></script>
 <script src="../assets/js/app.js"></script>
 <script src="../assets/js/donations.js"></script>
-<script src="../assets/js/pickups.js"></script>
+<script src="../assets/js/admin.js"></script>
 <script>
-  const session = getSession();
-  if (session) document.getElementById("topbar-avatar").textContent = session.name.charAt(0).toUpperCase();
-  initAssignmentsPage();
+  initAdminPickupAssignmentsPage();
 </script>
 </body>
 </html>

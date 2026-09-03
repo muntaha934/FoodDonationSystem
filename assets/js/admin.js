@@ -379,7 +379,120 @@ function initAuditLogPage() {
     </table>`;
 }
 
-/* ---------- Reports ---------- */
+/* ---------- Admin: all Requests (view-only) ---------- */
+function initAdminRequestsPage() {
+  const admin = requireRole("admin");
+  if (!admin) return;
+  document.getElementById("topbar-avatar").textContent = admin.name.charAt(0).toUpperCase();
+
+  const donationsById = Object.fromEntries(getDonations().map((d) => [d.donationId, d]));
+  const requests = [...getRequests()].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const wrap = document.getElementById("admin-requests-table-wrap");
+  const empty = document.getElementById("admin-requests-empty");
+
+  if (requests.length === 0) {
+    wrap.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  wrap.hidden = false;
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Donation</th>
+          <th>Donor</th>
+          <th>Recipient</th>
+          <th>Requested qty</th>
+          <th>Status</th>
+          <th>Submitted</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${requests
+          .map((r) => {
+            const d = donationsById[r.donationId];
+            return `
+          <tr>
+            <td>
+              <div class="table-cell-with-thumb">
+                <div class="food-thumb">${d ? categoryEmoji(d.categoryId) : "🍽️"}</div>
+                <div class="table-cell-with-thumb__name">${d ? d.title : r.donationId}</div>
+              </div>
+            </td>
+            <td>${d ? d.donorName : "—"}</td>
+            <td>${r.recipientName}</td>
+            <td>${r.requestedQuantity}${d ? " " + d.unit : ""}</td>
+            <td><span class="badge ${statusBadgeClass(r.status)}">${statusLabel(r.status)}</span></td>
+            <td>${formatDateTime(r.createdAt)}</td>
+          </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>`;
+}
+
+/* ---------- Admin: all Pickup Assignments (view-only) ---------- */
+function initAdminPickupAssignmentsPage() {
+  const admin = requireRole("admin");
+  if (!admin) return;
+  document.getElementById("topbar-avatar").textContent = admin.name.charAt(0).toUpperCase();
+
+  const usersById = Object.fromEntries(getUsers().map((u) => [u.userId, u]));
+  const assignments = getPickupAssignments();
+
+  const wrap = document.getElementById("admin-pickups-table-wrap");
+  const empty = document.getElementById("admin-pickups-empty");
+
+  if (assignments.length === 0) {
+    wrap.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  wrap.hidden = false;
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Food donation</th>
+          <th>Donor</th>
+          <th>Recipient</th>
+          <th>Volunteer</th>
+          <th>Pickup location</th>
+          <th>Delivery location</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${assignments
+          .map((a) => {
+            const donation = getDonationById(a.donationId);
+            const volunteer = usersById[a.volunteerId];
+            return `
+          <tr>
+            <td>
+              <div class="table-cell-with-thumb">
+                <div class="food-thumb">${donation ? categoryEmoji(donation.categoryId) : "🍽️"}</div>
+                <div class="table-cell-with-thumb__name">${donation ? donation.title : "—"}</div>
+              </div>
+            </td>
+            <td>${a.donorName}</td>
+            <td>${a.recipientName}</td>
+            <td>${volunteer ? volunteer.name : "—"}</td>
+            <td>${a.pickupAddress}</td>
+            <td>${a.deliveryAddress}</td>
+            <td><span class="badge ${statusBadgeClass(a.status)}">${statusLabel(a.status)}</span></td>
+          </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>`;
+}
 function initReportsPage() {
   const admin = requireRole("admin");
   if (!admin) return;
