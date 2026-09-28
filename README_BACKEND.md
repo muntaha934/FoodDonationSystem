@@ -1,27 +1,26 @@
-﻿# Sufra Backend Setup Guide
+﻿# Backend Setup Guide
 
-This project has a real PHP + MySQL backend that powers the app under XAMPP.
+This project uses a PHP + MySQL backend under XAMPP.
 
-## What is used
+## Technology used
 
 ### Frontend
 - HTML
 - CSS
 - JavaScript
-- Browser fetch calls to the API
+- Role-based pages under admin/, donor/, recipient/, and volunteer/
 
 ### Backend
 - PHP
-- Sessions for user authentication
+- PDO for MySQL access
 - JSON responses
-- PDO for database access
+- PHP sessions for login state
 
 ### Database
-- MySQL
-- XAMPP MariaDB/MySQL instance
-- Schema imported from `database/schema.sql`
+- MySQL via XAMPP
+- Schema file: `database/schema.sql`
 
-## Backend folder overview
+## Backend files
 
 ```text
 api/
@@ -42,30 +41,11 @@ api/
 ├── audit-logs.php
 ```
 
-## How the frontend and backend connect
+## Database configuration
 
-The frontend uses the file `assets/js/api-config.js` to define the API base URL:
+The database settings are defined in `api/config.php`.
 
-```js
-const API_CONFIG = {
-  baseUrl: "/food-waste-management/api",
-  useMockData: false,
-};
-```
-
-Then the frontend JavaScript uses `fetch()` or `apiFetch()` to call backend endpoints like:
-- `/login.php`
-- `/session.php`
-- `/donations.php`
-- `/requests.php`
-- `/pickup-assignments.php`
-- `/notifications.php`
-
-The backend returns JSON, and the frontend reads the response and updates the page.
-
-## How the database connection works
-
-The connection starts in `api/config.php`:
+Example:
 
 ```php
 const DB_HOST = 'localhost';
@@ -74,7 +54,7 @@ const DB_USER = 'root';
 const DB_PASS = '';
 ```
 
-Then `api/db.php` builds the PDO DSN and creates the database connection:
+Then `api/db.php` creates the PDO connection:
 
 ```php
 $dsn = sprintf(
@@ -91,55 +71,47 @@ $pdo = new PDO($dsn, DB_USER, DB_PASS, [
 ]);
 ```
 
-Every API file then calls `getDb()` to reuse that connection.
+## Authentication flow
 
-The `api/helpers.php` file centralizes shared logic like:
+1. The browser sends email and password to `api/login.php`
+2. PHP checks the user in the `AppUser` table
+3. The password is validated with `password_verify()`
+4. On success, the app stores `$_SESSION['user_id']`
+5. `api/session.php` returns the current authenticated user
+6. `api/logout.php` destroys the session
+
+## Shared helper functions
+
+`api/helpers.php` provides common functions used by the API:
+
 - `jsonResponse()`
 - `readJsonBody()`
 - `currentUser()`
 - `requireAuth()`
+- `requireRole()`
 - `normalizeUserRow()`
 - `normalizeDonationRow()`
 - `normalizeRequestRow()`
 
-This is how the database rows are converted into frontend-friendly JSON.
+## Schema and seed data
 
-## Authentication flow
-
-The login flow works like this:
-1. Browser sends email + password to `api/login.php`
-2. PHP checks the user in the `AppUser` table
-3. `password_verify()` validates the password hash
-4. On success, PHP stores the user ID in `$_SESSION['user_id']`
-5. The frontend later calls `api/session.php` to fetch the logged-in user
-6. Logout clears the session with `api/logout.php`
-
-## Database schema
-
-The schema is in:
+The database schema is in:
 - `database/schema.sql`
 
-It creates all major tables such as:
-- `AppUser`
-- `FoodDonation`
-- `Request`
-- `PickupAssignment`
-- `Notification`
-- `Feedback`
-- `WasteLog`
-- `AuditLog`
-
-It also inserts demo data and seeded demo credentials for all user roles.
+It creates the tables and inserts demo accounts for:
+- donor
+- recipient
+- volunteer
+- admin
 
 ## Full setup steps
 
-### 1) Install and start XAMPP
+### 1) Install XAMPP
 - Install XAMPP
 - Start Apache
 - Start MySQL
 
-### 2) Put the project inside htdocs
-Place the project here:
+### 2) Place project in htdocs
 
 ```text
 C:/xampp/htdocs/food-waste-management
@@ -147,23 +119,25 @@ C:/xampp/htdocs/food-waste-management
 
 ### 3) Import the database schema
 Open phpMyAdmin:
-- `http://localhost/phpmyadmin`
-
-Then run the SQL from:
-- `database/schema.sql`
-
-This creates:
-- database: `food_waste_management`
-- tables and seeded demo records
-
-### 4) Run the application
-Open:
 
 ```text
-http://localhost/food-waste-management/index.html
+http://localhost/phpmyadmin
 ```
 
-### 5) Login with demo accounts
+Then import:
+
+```text
+database/schema.sql
+```
+
+### 4) Run the app
+
+```text
+http://localhost/food-waste-management/login.html
+```
+
+## Demo users
+
 - Donor: `donor@demo.com` / `demo123`
 - Recipient: `recipient@demo.com` / `demo123`
 - Volunteer: `volunteer@demo.com` / `demo123`
@@ -171,29 +145,25 @@ http://localhost/food-waste-management/index.html
 
 ## Troubleshooting
 
-### “Database connection failed”
-This usually means the database was not created or the MySQL server is not running.
-
+### Database connection failed
 Check:
-- XAMPP MySQL is running
+- MySQL is running in XAMPP
 - the database `food_waste_management` exists
-- `api/config.php` has the correct DB values
+- credentials in `api/config.php` are correct
 
-### “Not Found” on API routes
-Check that:
+### API route not found
+Check:
 - the project is inside `htdocs`
 - Apache is running
-- the file path is correct under `/food-waste-management/api`
+- the URL matches `/food-waste-management/api/...`
 
-### Poor front-end data behavior
-If the frontend still looks like mock mode, verify that `assets/js/api-config.js` has:
-
-```js
-useMockData: false
-```
+### Frontend not loading live data
+Check `assets/js/api-config.js` and make sure the app is pointed to the backend rather than mock mode.
 
 ## Final note
 
-The app is designed with both demo mode and live database mode. In development, the mock layer makes testing easier; in production, the PHP API and MySQL database become the source of truth.
+The app uses a hybrid pattern during development:
+- mock data is useful for testing UI flow
+- PHP + MySQL is the real production data layer
 
-That is the complete setup flow for the Sufra backend in XAMPP.
+This backend structure is the correct setup for the project under XAMPP.
