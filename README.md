@@ -1,6 +1,6 @@
 ﻿# Food Waste Management System
 
-A role-based food redistribution web application for donors, recipients, volunteers, and admins.
+A role-based food redistribution platform for donors, recipients, volunteers, and admins.
 
 ## Stack
 
@@ -8,14 +8,14 @@ A role-based food redistribution web application for donors, recipients, volunte
 - Backend: PHP
 - Database: MySQL
 - Local server: XAMPP
-- Auth: PHP sessions with MySQL-backed user records
+- Authentication: PHP sessions and MySQL-backed user records
 
-## What this project does
+## What the app does
 
 - Donors can create, manage, and track food donations
 - Recipients can browse available food and submit requests
 - Volunteers can accept assignments and update pickup status
-- Admins can review users, donations, requests, feedback, audits, and reports
+- Admins can monitor users, donations, requests, feedback, reports, and audit logs
 
 ## Project structure
 
@@ -58,12 +58,14 @@ food-waste-management/
 
 ## Frontend and backend flow
 
-The frontend is a role-based UI with shared JavaScript modules. The app can run in demo/mock mode for testing, but the live implementation uses the PHP API and MySQL database.
+The frontend uses shared JavaScript modules and role-based pages. It includes a mock fallback for testing, but the live application uses the PHP API and MySQL database.
 
-API connection settings are defined in:
+Main frontend/API configuration files:
 - `assets/js/api-config.js`
+- `assets/js/auth-demo.js`
+- `assets/js/mock-data.js`
 
-Authentication and session state are handled through:
+Authentication and session handling are done through:
 - `api/login.php`
 - `api/session.php`
 - `api/logout.php`
@@ -72,9 +74,9 @@ Authentication and session state are handled through:
 
 1. Install XAMPP.
 2. Start Apache and MySQL.
-3. Copy the project to:
+3. Copy the project into:
    `C:/xampp/htdocs/food-waste-management`
-4. Open phpMyAdmin at:
+4. Open phpMyAdmin:
    `http://localhost/phpmyadmin`
 5. Import the SQL file:
    `database/schema.sql`
@@ -84,7 +86,7 @@ Authentication and session state are handled through:
 
 ## Demo login accounts
 
-After importing the schema, you can log in using:
+After importing the database schema, log in with:
 
 - Donor: `donor@demo.com` / `demo123`
 - Recipient: `recipient@demo.com` / `demo123`
@@ -93,22 +95,21 @@ After importing the schema, you can log in using:
 
 ## Database connection details
 
-The database configuration is stored in:
+The MySQL configuration is stored in:
 - `api/config.php`
 
-The actual PDO connection is created in:
+The PDO database connection is created in:
 - `api/db.php`
 
 The app uses MySQL with PHP Data Objects (PDO) and PHP sessions for authentication.
 
 ## Notes
 
-- The project is designed to work locally under XAMPP.
-- The backend is the real source of data.
-- The app includes a mock fallback layer during development, but the live backend is the final target.
-- This repository is meant for local submission/demo/running with XAMPP and MySQL.
+- The project is intended to run locally under XAMPP.
+- The backend is the source of live application data.
+- The project contains a mock fallback for UI-level development and demonstration.
+- This repository is meant for local demo and XAMPP-based setup.
 
-## Main documentation
+## Related documentation
 
-- [README.md](README.md) — project overview and setup
-- [README_BACKEND.md](README_BACKEND.md) — backend and database details
+- `README_BACKEND.md` — backend architecture, database connection, and setup
