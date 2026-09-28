@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — donations.js
+   Sufra — donations.js
    Donor-facing donation rendering + form logic.
    Loaded on: donor/donations.html, donor/create-donation.html,
               donor/donation-details.html
@@ -267,7 +267,7 @@ function initDonationDetailsPage() {
   }
 
   document.getElementById("donation-title").textContent = donation.title;
-  document.title = `${donation.title} — FoodShare`;
+  document.title = `${donation.title} — Sufra`;
   const headingEl = document.getElementById("donation-heading");
   if (headingEl) headingEl.textContent = donation.title;
 

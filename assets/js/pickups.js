@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — pickups.js
+   Sufra — pickups.js
    Volunteer-facing logic:
      - Available Assignments: accepted requests with no
        volunteer yet, claimable with one click
@@ -28,9 +28,10 @@ function renderAvailableAssignments() {
   empty.hidden = true;
   list.hidden = false;
 
-  list.innerHTML = entries
-    .map(
-      ({ request, donation }) => `
+  list.innerHTML = `<div style="display:flex; flex-direction:column; gap: var(--space-3);">
+    ${entries
+      .map(
+        ({ request, donation }) => `
     <div class="card" style="display:flex; flex-wrap:wrap; gap: var(--space-4); align-items:center; justify-content: space-between;">
       <div class="table-cell-with-thumb">
         <div class="food-thumb">${categoryEmoji(donation.categoryId)}</div>
@@ -45,8 +46,9 @@ function renderAvailableAssignments() {
         <button type="button" class="btn btn--primary btn--sm" onclick="handleAcceptAssignment('${request.requestId}')">Accept Assignment</button>
       </div>
     </div>`
-    )
-    .join("");
+      )
+      .join("")}
+  </div>`;
 }
 
 function handleAcceptAssignment(requestId) {
@@ -208,7 +210,7 @@ function initPickupDetailsPage() {
   const request = getRequests().find((r) => r.requestId === assignment.requestId);
 
   if (headingEl) headingEl.textContent = donation ? donation.title : assignment.assignmentId;
-  document.title = `${donation ? donation.title : "Pickup"} — FoodShare`;
+  document.title = `${donation ? donation.title : "Pickup"} — Sufra`;
 
   const stageIndex = PICKUP_STAGES.indexOf(assignment.status);
   const isCancelled = assignment.status === "cancelled";
@@ -298,4 +300,81 @@ function advancePickup(nextStatus) {
 
   showToast(`Marked as ${labels[nextStatus]}.`, "success");
   initPickupDetailsPage();
+}
+
+/* ---------- Donor: Pickup Status (read-only) ---------- */
+function renderDonorPickupStatus() {
+  const donor = getSession();
+  if (!donor) return;
+
+  const trackedDonations = getDonations({ donorId: donor.userId }).filter((d) =>
+    ["claimed", "delivered"].includes(d.status)
+  );
+  const assignmentByDonation = Object.fromEntries(getPickupAssignments().map((a) => [a.donationId, a]));
+  const acceptedRequestByDonation = Object.fromEntries(
+    getRequests({ status: "accepted" }).map((r) => [r.donationId, r])
+  );
+
+  const rows = trackedDonations
+    .map((d) => ({
+      donation: d,
+      assignment: assignmentByDonation[d.donationId] || null,
+      request: acceptedRequestByDonation[d.donationId] || null,
+    }))
+    .sort((a, b) => new Date(b.donation.createdAt) - new Date(a.donation.createdAt));
+
+  const wrap = document.getElementById("pickup-status-table-wrap");
+  const empty = document.getElementById("pickup-status-empty");
+
+  if (rows.length === 0) {
+    wrap.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  wrap.hidden = false;
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Food donation</th>
+          <th>Recipient</th>
+          <th>Volunteer</th>
+          <th>Pickup location</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows
+          .map(({ donation, assignment, request }) => {
+            const status = assignment ? assignment.status : "pickup-pending";
+            const recipientName = assignment ? assignment.recipientName : request ? request.recipientName : "—";
+            return `
+          <tr>
+            <td>
+              <div class="table-cell-with-thumb">
+                <div class="food-thumb">${categoryEmoji(donation.categoryId)}</div>
+                <div>
+                  <div class="table-cell-with-thumb__name">${donation.title}</div>
+                  <div class="table-cell-with-thumb__meta">${donation.donationId}</div>
+                </div>
+              </div>
+            </td>
+            <td>${recipientName}</td>
+            <td>${assignment ? "Assigned" : "Awaiting a volunteer"}</td>
+            <td>${donation.pickupAddress}</td>
+            <td><span class="badge ${statusBadgeClass(status)}">${statusLabel(status)}</span></td>
+          </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>`;
+}
+
+function initDonorPickupStatusPage() {
+  const donor = requireRole("donor");
+  if (!donor) return;
+  document.getElementById("topbar-avatar").textContent = donor.name.charAt(0).toUpperCase();
+  renderDonorPickupStatus();
 }

@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — profile.js
+   Sufra — profile.js
    Shared across all four roles. Renders the common profile
    fields plus role-specific ones (donor/recipient/volunteer),
    and a password-change section that's demo-only (no real

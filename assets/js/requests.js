@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — requests.js
+   Sufra — requests.js
    Donor-facing "Requests" page: shows requests submitted
    against the signed-in donor's donations, with accept/reject
    actions (frontend-only state change for now).

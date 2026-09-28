@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — find-food.js
+   Sufra — find-food.js
    Recipient-facing logic:
      - Find Food: card grid of available donations + filters
      - Food Details / Request: full info + request form
@@ -114,7 +114,7 @@ function initFoodDetailsPage() {
     return;
   }
 
-  document.title = `${donation.title} — FoodShare`;
+  document.title = `${donation.title} — Sufra`;
   const headingEl = document.getElementById("food-details-heading");
   if (headingEl) headingEl.textContent = donation.title;
 

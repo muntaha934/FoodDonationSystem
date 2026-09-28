@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — api-config.js  (Phase 7: integration prep)
+   Sufra — api-config.js  (Phase 7: integration prep)
 
    This file is NOT loaded by any page yet, and nothing in
    mock-data.js calls it. It exists so the switch from mock

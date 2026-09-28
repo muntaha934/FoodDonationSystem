@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — app.js
+   Sufra — app.js
    Shared, page-agnostic UI behaviour:
      - mobile navbar toggle
      - toast notifications

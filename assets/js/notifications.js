@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — notifications.js
+   Sufra — notifications.js
    Shared across all four roles. Renders the signed-in user's
    notifications with unread/read visual states and a "mark as
    read" interaction, plus "mark all as read".

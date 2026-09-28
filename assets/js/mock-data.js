@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — mock-data.js
+   Sufra — mock-data.js
 
    Frontend-only data layer. Everything here stands in for the
    eventual 15-table MySQL database:
@@ -93,7 +93,7 @@ const SEED_DATA = {
       name: "System Admin",
       email: "admin@demo.com",
       phone: "+880 1611-777888",
-      address: "FoodShare HQ, Gulshan, Dhaka",
+      address: "Sufra HQ, Gulshan, Dhaka",
       status: "active",
       registeredAt: "2026-05-01T09:00",
     },

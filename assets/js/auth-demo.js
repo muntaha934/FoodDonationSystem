@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — auth-demo.js
+   Sufra — auth-demo.js
 
    Frontend-only "authentication". Nothing here is secure and
    none of it should be reused as-is once PHP sessions exist —

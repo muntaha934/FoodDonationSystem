@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — feedback.js
+   Sufra — feedback.js
    - Recipient: leave feedback on completed (delivered) requests,
      and see feedback already given.
    - Donor: see feedback received from recipients.

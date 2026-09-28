@@ -1,5 +1,5 @@
 /* =========================================================
-   FoodShare — admin.js
+   Sufra — admin.js
    Admin-facing logic for the dashboard, User Management,
    Donation Management, Waste Log, Audit Log, and Reports pages.
    Charts are plain divs sized by percentage — no chart library,
