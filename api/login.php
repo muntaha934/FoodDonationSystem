@@ -18,9 +18,16 @@ $stmt = $pdo->prepare('SELECT * FROM AppUser WHERE email = :email LIMIT 1');
 $stmt->execute([':email' => $email]);
 $user = $stmt->fetch();
 
-if (!$user || !password_verify($password, $user['password_hash'])) {
+if (!$user) {
     jsonResponse(['message' => 'Invalid email or password.'], 401);
 }
 
-$_SESSION['user_id'] = $user['userId'];
+$storedHash = $user['password_hash'] ?? $user['password'] ?? '';
+$verified = $storedHash !== '' && (password_verify($password, $storedHash) || hash_equals((string) $storedHash, $password));
+
+if (!$verified) {
+    jsonResponse(['message' => 'Invalid email or password.'], 401);
+}
+
+$_SESSION['user_id'] = $user['userId'] ?? $user['user_id'];
 jsonResponse(normalizeUserRow($user), 200);

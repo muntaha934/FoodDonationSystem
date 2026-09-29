@@ -57,7 +57,7 @@ function requireRole(string $role): array
 function normalizeUserRow(array $row): array
 {
     return [
-        'userId' => $row['userId'] ?? null,
+        'userId' => $row['userId'] ?? $row['userIdLegacy'] ?? $row['user_id'] ?? null,
         'role' => $row['role'] ?? null,
         'name' => $row['name'] ?? null,
         'email' => $row['email'] ?? null,
@@ -69,28 +69,28 @@ function normalizeUserRow(array $row): array
         'vehicleType' => $row['vehicle_type'] ?? null,
         'availability' => $row['availability'] ?? null,
         'status' => $row['status'] ?? 'active',
-        'registeredAt' => $row['created_at'] ?? null,
+        'registeredAt' => $row['created_at'] ?? $row['createdAt'] ?? null,
     ];
 }
 
 function normalizeDonationRow(array $row): array
 {
     return [
-        'donationId' => $row['donationId'] ?? null,
-        'donorId' => $row['donorId'] ?? null,
+        'donationId' => $row['donationId'] ?? $row['donation_id'] ?? null,
+        'donorId' => $row['donorId'] ?? $row['donor_id'] ?? null,
         'donorName' => $row['donorName'] ?? null,
         'title' => $row['title'] ?? null,
-        'categoryId' => $row['categoryId'] ?? null,
+        'categoryId' => $row['categoryId'] ?? $row['category_id'] ?? null,
         'description' => $row['description'] ?? null,
         'quantity' => (int) ($row['quantity'] ?? 0),
         'unit' => $row['unit'] ?? null,
-        'preparedAt' => $row['preparedAt'] ?? null,
-        'expiresAt' => $row['expiresAt'] ?? null,
+        'preparedAt' => $row['preparedAt'] ?? $row['prepared_at'] ?? null,
+        'expiresAt' => $row['expiresAt'] ?? $row['expiry_time'] ?? null,
         'pickupAddress' => $row['pickupAddress'] ?? null,
         'contact' => $row['contact'] ?? null,
         'notes' => $row['notes'] ?? null,
         'status' => $row['status'] ?? 'available',
-        'createdAt' => $row['createdAt'] ?? null,
+        'createdAt' => $row['createdAt'] ?? $row['created_at'] ?? null,
         'requestCount' => (int) ($row['requestCount'] ?? 0),
     ];
 }
@@ -98,21 +98,21 @@ function normalizeDonationRow(array $row): array
 function normalizeRequestRow(array $row): array
 {
     return [
-        'requestId' => $row['requestId'] ?? null,
-        'donationId' => $row['donationId'] ?? null,
-        'recipientId' => $row['recipientId'] ?? null,
+        'requestId' => $row['requestId'] ?? $row['request_id'] ?? null,
+        'donationId' => $row['donationId'] ?? $row['donation_id'] ?? null,
+        'recipientId' => $row['recipientId'] ?? $row['recipient_id'] ?? null,
         'recipientName' => $row['recipientName'] ?? null,
-        'requestedQuantity' => (int) ($row['requestedQuantity'] ?? 0),
+        'requestedQuantity' => (int) ($row['requestedQuantity'] ?? $row['requested_qty'] ?? 0),
         'peopleToServe' => (int) ($row['peopleToServe'] ?? 0),
         'notes' => $row['notes'] ?? null,
         'status' => $row['status'] ?? 'pending',
-        'createdAt' => $row['createdAt'] ?? null,
+        'createdAt' => $row['createdAt'] ?? $row['created_at'] ?? null,
     ];
 }
 
 function generateNextId(PDO $pdo, string $table, string $prefix, string $column): string
 {
-    $stmt = $pdo->prepare("SELECT {$column} FROM {$table} WHERE {$column} LIKE :prefix ORDER BY {$column} DESC LIMIT 1");
+    $stmt = $pdo->prepare("SELECT {$column} FROM `{$table}` WHERE {$column} LIKE :prefix ORDER BY {$column} DESC LIMIT 1");
     $stmt->execute([':prefix' => $prefix . '-%']);
     $row = $stmt->fetch();
 
@@ -124,16 +124,101 @@ function generateNextId(PDO $pdo, string $table, string $prefix, string $column)
     return $prefix . '-' . ((int) $lastNumber + 1);
 }
 
+function resolveUserId(PDO $pdo, mixed $value): ?int
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return (int) $value;
+    }
+
+    $stmt = $pdo->prepare('SELECT user_id FROM AppUser WHERE userId = :value1 OR userIdLegacy = :value2 OR CONCAT("U-", user_id) = :value3 LIMIT 1');
+    $stmt->execute([
+        ':value1' => (string) $value,
+        ':value2' => (string) $value,
+        ':value3' => (string) $value,
+    ]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['user_id'] : null;
+}
+
+function resolveCategoryId(PDO $pdo, mixed $value): ?int
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return (int) $value;
+    }
+
+    $stmt = $pdo->prepare('SELECT category_id FROM FoodCategory WHERE categoryId = :value1 OR CONCAT("C-", category_id) = :value2 OR category_name = :value3 LIMIT 1');
+    $stmt->execute([
+        ':value1' => (string) $value,
+        ':value2' => (string) $value,
+        ':value3' => (string) $value,
+    ]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['category_id'] : null;
+}
+
+function resolveDonationId(PDO $pdo, mixed $value): ?int
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return (int) $value;
+    }
+
+    $stmt = $pdo->prepare('SELECT donation_id FROM FoodDonation WHERE donationId = :value1 OR CONCAT("D-", donation_id) = :value2 LIMIT 1');
+    $stmt->execute([
+        ':value1' => (string) $value,
+        ':value2' => (string) $value,
+    ]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['donation_id'] : null;
+}
+
+function resolveRequestId(PDO $pdo, mixed $value): ?int
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return (int) $value;
+    }
+
+    $stmt = $pdo->prepare('SELECT request_id FROM Request WHERE requestId = :value1 OR CONCAT("RQ-", request_id) = :value2 LIMIT 1');
+    $stmt->execute([
+        ':value1' => (string) $value,
+        ':value2' => (string) $value,
+    ]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['request_id'] : null;
+}
+
 function createNotification(PDO $pdo, string $userId, string $message): void
 {
-    $notificationId = generateNextId($pdo, 'Notification', 'N', 'notificationId');
-    $stmt = $pdo->prepare('INSERT INTO Notification (notificationId, userId, message, isRead, createdAt) VALUES (:id, :userId, :message, :isRead, :createdAt)');
+    $userIdInt = resolveUserId($pdo, $userId);
+    if ($userIdInt === null) {
+        return;
+    }
+
+    $stmt = $pdo->prepare('INSERT INTO Notification (user_id, donation_id, message, is_read, created_at, notificationId, userId, isRead, createdAt) VALUES (:user_id, NULL, :message, 0, NOW(), :notificationId, :userId, 0, NOW())');
     $stmt->execute([
-        ':id' => $notificationId,
-        ':userId' => $userId,
+        ':user_id' => $userIdInt,
         ':message' => $message,
-        ':isRead' => 0,
-        ':createdAt' => date('Y-m-d\TH:i:s'),
+        ':notificationId' => generateNextId($pdo, 'Notification', 'N', 'notificationId'),
+        ':userId' => $userId,
     ]);
 }
 

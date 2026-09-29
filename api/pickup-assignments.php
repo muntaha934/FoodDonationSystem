@@ -36,12 +36,20 @@ if ($method === 'POST') {
     }
 
     $pdo = getDb();
+    $requestIdInt = resolveRequestId($pdo, $data['requestId']);
+    $volunteerId = resolveUserId($pdo, $data['volunteerId']);
+    if ($requestIdInt === null || $volunteerId === null) {
+        jsonResponse(['message' => 'Valid request and volunteer are required.'], 400);
+    }
+
     $assignmentId = generateNextId($pdo, 'PickupAssignment', 'PA', 'assignmentId');
-    $stmt = $pdo->prepare('INSERT INTO PickupAssignment (assignmentId, requestId, donationId, volunteerId, donorName, recipientName, pickupAddress, deliveryAddress, pickupTime, deliveryTime, status) VALUES (:id, :requestId, :donationId, :volunteerId, :donorName, :recipientName, :pickupAddress, :deliveryAddress, :pickupTime, :deliveryTime, :status)');
+    $stmt = $pdo->prepare('INSERT INTO PickupAssignment (assignmentId, request_id, requestId, donationId, volunteer_id, volunteerId, donorName, recipientName, pickupAddress, deliveryAddress, pickupTime, deliveryTime, status) VALUES (:id, :request_id, :requestId, :donationId, :volunteer_id, :volunteerId, :donorName, :recipientName, :pickupAddress, :deliveryAddress, :pickupTime, :deliveryTime, :status)');
     $stmt->execute([
         ':id' => $assignmentId,
+        ':request_id' => $requestIdInt,
         ':requestId' => $data['requestId'],
         ':donationId' => $data['donationId'],
+        ':volunteer_id' => $volunteerId,
         ':volunteerId' => $data['volunteerId'],
         ':donorName' => $data['donorName'],
         ':recipientName' => $data['recipientName'],

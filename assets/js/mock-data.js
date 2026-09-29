@@ -37,6 +37,58 @@
 
 const DB_KEY = "fw_db_v1";
 
+function apiBasePath() {
+  const path = window.location.pathname || "";
+  if (path.includes("/admin/")) return "../api";
+  if (path.includes("/donor/")) return "../api";
+  if (path.includes("/recipient/")) return "../api";
+  if (path.includes("/volunteer/")) return "../api";
+  return "api";
+}
+
+function apiRequest(path, options = {}) {
+  const xhr = new XMLHttpRequest();
+  const method = (options.method || "GET").toUpperCase();
+  const url = `${apiBasePath()}${path}`;
+  xhr.open(method, url, false);
+  xhr.withCredentials = true;
+
+  if (options.body && typeof options.body !== "string") {
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(options.body));
+  } else {
+    if (options.body) {
+      xhr.setRequestHeader("Content-Type", "application/json");
+    }
+    xhr.send(options.body || null);
+  }
+
+  if (xhr.status >= 200 && xhr.status < 300) {
+    const text = xhr.responseText || "";
+    return text ? JSON.parse(text) : null;
+  }
+
+  const text = xhr.responseText || "";
+  let payload = null;
+  try { payload = text ? JSON.parse(text) : null; } catch (error) { payload = null; }
+  throw new Error((payload && payload.message) || `Request failed (${xhr.status})`);
+}
+
+function isBackendMode() {
+  if (typeof window === "undefined") return false;
+  const cfg = window.API_CONFIG || { useMockData: false };
+  if (!cfg.useMockData) {
+    try {
+      localStorage.removeItem("fw_db_v1");
+      localStorage.removeItem("fw_session_v1");
+      sessionStorage.removeItem("fw_redirect_notice");
+    } catch (error) {
+      // Ignore storage cleanup errors.
+    }
+  }
+  return !cfg.useMockData;
+}
+
 /* Small helper so a few sample donations always look "fresh"
    relative to whenever this project is actually opened, instead
    of using fixed dates that would eventually read as expired.
@@ -545,16 +597,41 @@ function genId(prefix) {
 
 // See API_INTEGRATION.md §3 (Food Categories)
 function getFoodCategories() {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/categories.php");
+    } catch (error) {
+      return [];
+    }
+  }
   return loadDb().foodCategories;
 }
 
 function getCategoryName(categoryId) {
+  if (isBackendMode()) {
+    const categories = getFoodCategories();
+    const category = Array.isArray(categories) ? categories.find((c) => c.categoryId === categoryId) : null;
+    return category ? category.name : "Uncategorized";
+  }
   const category = loadDb().foodCategories.find((c) => c.categoryId === categoryId);
   return category ? category.name : "Uncategorized";
 }
 
 // See API_INTEGRATION.md §4 (Donations)
 function getDonations(filters = {}) {
+  if (isBackendMode()) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") params.append(key, value);
+    });
+    const query = params.toString() ? `?${params.toString()}` : "";
+    try {
+      return apiRequest(`/donations.php${query}`);
+    } catch (error) {
+      return [];
+    }
+  }
+
   let list = loadDb().donations;
   if (filters.status) list = list.filter((d) => d.status === filters.status);
   if (filters.donorId) list = list.filter((d) => d.donorId === filters.donorId);
@@ -563,10 +640,22 @@ function getDonations(filters = {}) {
 }
 
 function getDonationById(donationId) {
+  if (isBackendMode()) {
+    const rows = getDonations({ id: donationId });
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  }
   return loadDb().donations.find((d) => d.donationId === donationId) || null;
 }
 
 function createDonation(donation) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/donations.php", { method: "POST", body: donation });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const db = loadDb();
   const record = {
     donationId: genId("D"),
@@ -581,6 +670,14 @@ function createDonation(donation) {
 }
 
 function updateDonationStatus(donationId, status) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/donations.php?id=${encodeURIComponent(donationId)}&status=${encodeURIComponent(status)}`, { method: "PATCH" });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const donation = db.donations.find((d) => d.donationId === donationId);
   if (donation) {
@@ -592,6 +689,19 @@ function updateDonationStatus(donationId, status) {
 
 // See API_INTEGRATION.md §5 (Requests)
 function getRequests(filters = {}) {
+  if (isBackendMode()) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") params.append(key, value);
+    });
+    const query = params.toString() ? `?${params.toString()}` : "";
+    try {
+      return apiRequest(`/requests.php${query}`);
+    } catch (error) {
+      return [];
+    }
+  }
+
   let list = loadDb().requests;
   if (filters.donationId) list = list.filter((r) => r.donationId === filters.donationId);
   if (filters.recipientId) list = list.filter((r) => r.recipientId === filters.recipientId);
@@ -600,6 +710,14 @@ function getRequests(filters = {}) {
 }
 
 function createRequest(request) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/requests.php", { method: "POST", body: request });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const db = loadDb();
   const record = {
     requestId: genId("RQ"),
@@ -617,6 +735,14 @@ function createRequest(request) {
 }
 
 function updateRequestStatus(requestId, status) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/requests.php?id=${encodeURIComponent(requestId)}&status=${encodeURIComponent(status)}`, { method: "PATCH" });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const req = db.requests.find((r) => r.requestId === requestId);
   if (req) {
@@ -628,6 +754,19 @@ function updateRequestStatus(requestId, status) {
 
 // See API_INTEGRATION.md §6 (Pickup Assignments)
 function getPickupAssignments(filters = {}) {
+  if (isBackendMode()) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") params.append(key, value);
+    });
+    const query = params.toString() ? `?${params.toString()}` : "";
+    try {
+      return apiRequest(`/pickup-assignments.php${query}`);
+    } catch (error) {
+      return [];
+    }
+  }
+
   let list = loadDb().pickupAssignments;
   if (filters.volunteerId) list = list.filter((p) => p.volunteerId === filters.volunteerId);
   if (filters.status) list = list.filter((p) => p.status === filters.status);
@@ -635,12 +774,26 @@ function getPickupAssignments(filters = {}) {
 }
 
 function getPickupAssignmentById(assignmentId) {
+  if (isBackendMode()) {
+    const rows = getPickupAssignments({ id: assignmentId });
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  }
   return loadDb().pickupAssignments.find((p) => p.assignmentId === assignmentId) || null;
 }
 
 // Accepted requests that don't have a volunteer/pickup assignment
 // yet — these are what shows up under "Available Assignments".
 function getAvailableAssignments() {
+  if (isBackendMode()) {
+    const requests = getRequests({ status: "accepted" });
+    const assignments = getPickupAssignments();
+    const assignedIds = new Set((assignments || []).map((p) => p.requestId));
+    return (requests || [])
+      .filter((r) => !assignedIds.has(r.requestId))
+      .map((r) => ({ request: r, donation: getDonationById(r.donationId) }))
+      .filter((entry) => entry.donation);
+  }
+
   const db = loadDb();
   const assignedRequestIds = new Set(db.pickupAssignments.map((p) => p.requestId));
   return db.requests
@@ -653,6 +806,14 @@ function getAvailableAssignments() {
 }
 
 function createPickupAssignment(assignment) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/pickup-assignments.php", { method: "POST", body: assignment });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const db = loadDb();
   const record = {
     assignmentId: genId("PA"),
@@ -665,6 +826,14 @@ function createPickupAssignment(assignment) {
 }
 
 function updatePickupStatus(assignmentId, status) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/pickup-assignments.php?id=${encodeURIComponent(assignmentId)}&status=${encodeURIComponent(status)}`, { method: "PATCH" });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const a = db.pickupAssignments.find((p) => p.assignmentId === assignmentId);
   if (a) {
@@ -677,12 +846,28 @@ function updatePickupStatus(assignmentId, status) {
 
 // See API_INTEGRATION.md §9 (Notifications)
 function getNotifications(userId) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/notifications.php`);
+    } catch (error) {
+      return [];
+    }
+  }
+
   return loadDb()
     .notifications.filter((n) => n.userId === userId)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 function markNotificationRead(notificationId) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/notifications.php?id=${encodeURIComponent(notificationId)}`, { method: "PATCH" });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const n = db.notifications.find((x) => x.notificationId === notificationId);
   if (n) {
@@ -694,6 +879,19 @@ function markNotificationRead(notificationId) {
 
 // See API_INTEGRATION.md §8 (Feedback)
 function getFeedback(filters = {}) {
+  if (isBackendMode()) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") params.append(key, value);
+    });
+    const query = params.toString() ? `?${params.toString()}` : "";
+    try {
+      return apiRequest(`/feedback.php${query}`);
+    } catch (error) {
+      return [];
+    }
+  }
+
   let list = loadDb().feedback;
   if (filters.toUserId) list = list.filter((f) => f.toUserId === filters.toUserId);
   if (filters.fromUserId) list = list.filter((f) => f.fromUserId === filters.fromUserId);
@@ -701,6 +899,14 @@ function getFeedback(filters = {}) {
 }
 
 function createFeedback(feedback) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/feedback.php", { method: "POST", body: feedback });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const db = loadDb();
   const record = {
     feedbackId: genId("F"),
@@ -714,15 +920,37 @@ function createFeedback(feedback) {
 
 // See API_INTEGRATION.md §7 (Waste Log)
 function getWasteLogs() {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/waste-logs.php");
+    } catch (error) {
+      return [];
+    }
+  }
   return loadDb().wasteLogs;
 }
 
 // See API_INTEGRATION.md §2 (Users) and §1 (Auth)
 function getUsers() {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/users.php");
+    } catch (error) {
+      return [];
+    }
+  }
   return loadDb().users;
 }
 
 function updateUserStatus(userId, status) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/users.php?id=${encodeURIComponent(userId)}`, { method: "PATCH", body: { status } });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const user = db.users.find((u) => u.userId === userId);
   if (user) {
@@ -734,18 +962,41 @@ function updateUserStatus(userId, status) {
 
 // See API_INTEGRATION.md §10 (Audit Log)
 function getAuditLogs() {
+  if (isBackendMode()) {
+    try {
+      return apiRequest("/audit-logs.php");
+    } catch (error) {
+      return [];
+    }
+  }
   return [...loadDb().auditLogs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
 function getUserByEmail(email) {
+  if (isBackendMode()) {
+    const users = getUsers();
+    return Array.isArray(users) ? users.find((u) => String(u.email).toLowerCase() === String(email).toLowerCase()) || null : null;
+  }
   return loadDb().users.find((u) => u.email.toLowerCase() === email.toLowerCase()) || null;
 }
 
 function getUserByRole(role) {
+  if (isBackendMode()) {
+    const users = getUsers();
+    return Array.isArray(users) ? users.find((u) => String(u.role).toLowerCase() === String(role).toLowerCase()) || null : null;
+  }
   return loadDb().users.find((u) => u.role === role) || null;
 }
 
 function updateUserProfile(userId, updates) {
+  if (isBackendMode()) {
+    try {
+      return apiRequest(`/users.php?id=${encodeURIComponent(userId)}`, { method: "PATCH", body: updates });
+    } catch (error) {
+      return null;
+    }
+  }
+
   const db = loadDb();
   const user = db.users.find((u) => u.userId === userId);
   if (user) {

@@ -16,13 +16,81 @@
 
 const SESSION_KEY = "fw_session_v1";
 
+function clearLegacyBrowserState() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem("fw_db_v1");
+    sessionStorage.removeItem("fw_redirect_notice");
+  } catch (error) {
+    // Ignore storage errors in restricted browsers.
+  }
+}
+
+function apiBasePath() {
+  const path = window.location.pathname || "";
+  if (path.includes("/admin/")) return "../api";
+  if (path.includes("/donor/")) return "../api";
+  if (path.includes("/recipient/")) return "../api";
+  if (path.includes("/volunteer/")) return "../api";
+  return "api";
+}
+
+function apiRequest(path, options = {}) {
+  const xhr = new XMLHttpRequest();
+  const method = (options.method || "GET").toUpperCase();
+  xhr.open(method, `${apiBasePath()}${path}`, false);
+  xhr.withCredentials = true;
+
+  if (options.body && typeof options.body !== "string") {
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(options.body));
+  } else {
+    if (options.body) {
+      xhr.setRequestHeader("Content-Type", "application/json");
+    }
+    xhr.send(options.body || null);
+  }
+
+  if (xhr.status >= 200 && xhr.status < 300) {
+    const text = xhr.responseText || "";
+    return text ? JSON.parse(text) : null;
+  }
+
+  const text = xhr.responseText || "";
+  let payload = null;
+  try { payload = text ? JSON.parse(text) : null; } catch (error) { payload = null; }
+  throw new Error((payload && payload.message) || `Request failed (${xhr.status})`);
+}
+
 /* ---------- Session helpers ---------- */
 function getSession() {
-  const raw = localStorage.getItem(SESSION_KEY);
-  return raw ? JSON.parse(raw) : null;
+  try {
+    const user = apiRequest("/session.php");
+    if (user && user.userId) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      return user;
+    }
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  } catch (error) {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (raw) {
+      try {
+        const cached = JSON.parse(raw);
+        if (cached && cached.userId) return cached;
+      } catch (error2) {
+        localStorage.removeItem(SESSION_KEY);
+      }
+    }
+    return null;
+  }
 }
 
 function setSession(user) {
+  if (!user || !user.userId) {
+    localStorage.removeItem(SESSION_KEY);
+    return;
+  }
   localStorage.setItem(SESSION_KEY, JSON.stringify(user));
 }
 
@@ -36,6 +104,11 @@ function basePath() {
 }
 
 function logout() {
+  try {
+    apiRequest("/logout.php", { method: "POST" });
+  } catch (error) {
+    // ignore backend logout errors and still clear local session
+  }
   localStorage.removeItem(SESSION_KEY);
   window.location.href = basePath() + "login.html";
 }
@@ -68,16 +141,35 @@ function requireRole(role) {
 
 /* ---------- Demo role login (used on the login page) ---------- */
 function demoLoginAs(role) {
-  const user = getUserByRole(role);
-  if (!user) {
+  const roleEmails = {
+    donor: "donor@demo.com",
+    recipient: "recipient@demo.com",
+    volunteer: "volunteer@demo.com",
+    admin: "admin@demo.com",
+  };
+
+  const email = roleEmails[role];
+  if (!email) {
     showToast("No demo account found for that role.", "error");
     return;
   }
-  setSession(user);
-  showToast(`Signed in as ${user.name} (${capitalize(role)}) — demo mode.`, "success");
-  setTimeout(() => {
-    window.location.href = dashboardPathForRole(role);
-  }, 500);
+
+  try {
+    const user = apiRequest("/login.php", {
+      method: "POST",
+      body: {
+        email,
+        password: "demo123",
+      },
+    });
+    setSession(user);
+    showToast(`Signed in as ${user.name} (${capitalize(role)}) — live backend mode.`, "success");
+    setTimeout(() => {
+      window.location.href = dashboardPathForRole(role);
+    }, 500);
+  } catch (error) {
+    showToast(error.message || "Demo login failed.", "error");
+  }
 }
 
 function capitalize(word) {
@@ -102,17 +194,23 @@ function initLoginForm() {
     valid = validateField(form.password, password.length >= 6) && valid;
     if (!valid) return;
 
-    const user = getUserByEmail(email);
-    if (!user) {
-      showToast("No account matches that email in this demo. Try a Demo Login below.", "error");
-      return;
-    }
+    try {
+      const user = apiRequest("/login.php", {
+        method: "POST",
+        body: {
+          email,
+          password,
+        },
+      });
 
-    setSession(user);
-    showToast(`Welcome back, ${user.name}.`, "success");
-    setTimeout(() => {
-      window.location.href = dashboardPathForRole(user.role);
-    }, 500);
+      setSession(user);
+      showToast(`Welcome back, ${user.name}.`, "success");
+      setTimeout(() => {
+        window.location.href = dashboardPathForRole(user.role);
+      }, 500);
+    } catch (error) {
+      showToast(error.message || "No account matches that email or password.", "error");
+    }
   });
 }
 
@@ -176,38 +274,37 @@ function initRegisterForm() {
       return;
     }
 
-    const newUser = {
-      userId: genId("U"),
-      role,
+    const payload = {
       name,
       email,
       phone,
+      password,
+      role,
       address,
-      status: "active",
-      registeredAt: new Date().toISOString(),
     };
 
     if (role === "donor") {
-      newUser.donorType = form.donorType.value;
-      newUser.organizationName = form.donorOrg.value.trim();
+      payload.donorType = form.donorType.value;
+      payload.organizationName = form.donorOrg.value.trim();
     }
     if (role === "recipient") {
-      newUser.recipientType = form.recipientType.value;
-      newUser.organizationName = form.recipientOrg.value.trim();
+      payload.recipientType = form.recipientType.value;
+      payload.organizationName = form.recipientOrg.value.trim();
     }
     if (role === "volunteer") {
-      newUser.vehicleType = form.vehicleType.value;
-      newUser.availability = form.availability.value.trim();
+      payload.vehicleType = form.vehicleType.value;
+      payload.availability = form.availability.value.trim();
     }
 
-    const db = loadDb();
-    db.users.push(newUser);
-    saveDb(db);
-
-    showToast("Account created. Redirecting to login…", "success");
-    setTimeout(() => {
-      window.location.href = basePath() + "login.html";
-    }, 900);
+    try {
+      apiRequest("/register.php", { method: "POST", body: payload });
+      showToast("Account created. Redirecting to login…", "success");
+      setTimeout(() => {
+        window.location.href = basePath() + "login.html";
+      }, 900);
+    } catch (error) {
+      showToast(error.message || "Registration failed.", "error");
+    }
   });
 }
 

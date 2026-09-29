@@ -39,31 +39,45 @@ if ($method === 'POST') {
     }
 
     $pdo = getDb();
+    $recipientUserId = resolveUserId($pdo, $data['recipientId'] ?? $user['userId'] ?? null);
+    $donationIdInt = resolveDonationId($pdo, $data['donationId']);
+    if ($recipientUserId === null || $donationIdInt === null) {
+        jsonResponse(['message' => 'Valid recipient and donation are required.'], 400);
+    }
+
+    $recipientUser = $pdo->prepare('SELECT * FROM AppUser WHERE user_id = :id LIMIT 1');
+    $recipientUser->execute([':id' => $recipientUserId]);
+    $recipientRow = $recipientUser->fetch();
     $requestId = generateNextId($pdo, 'Request', 'RQ', 'requestId');
-    $stmt = $pdo->prepare('INSERT INTO Request (requestId, donationId, recipientId, recipientName, requestedQuantity, peopleToServe, notes, status, createdAt) VALUES (:requestId, :donationId, :recipientId, :recipientName, :requestedQuantity, :peopleToServe, :notes, :status, :createdAt)');
+    $stmt = $pdo->prepare('INSERT INTO Request (requestId, donation_id, recipient_id, recipientId, recipientName, requested_qty, requestedQuantity, peopleToServe, notes, status, createdAt) VALUES (:requestId, :donation_id, :recipient_id, :recipientId, :recipientName, :requested_qty, :requestedQuantity, :peopleToServe, :notes, :status, :createdAt)');
     $stmt->execute([
         ':requestId' => $requestId,
-        ':donationId' => $data['donationId'],
-        ':recipientId' => $data['recipientId'],
-        ':recipientName' => $data['recipientName'],
-        ':requestedQuantity' => (int) $data['requestedQuantity'],
+        ':donation_id' => $donationIdInt,
+        ':recipient_id' => $recipientUserId,
+        ':recipientId' => $data['recipientId'] ?? $user['userId'] ?? 'U-' . $recipientUserId,
+        ':recipientName' => $recipientRow['name'] ?? $data['recipientName'] ?? 'Unknown recipient',
+        ':requested_qty' => (float) $data['requestedQuantity'],
+        ':requestedQuantity' => (float) $data['requestedQuantity'],
         ':peopleToServe' => (int) $data['peopleToServe'],
         ':notes' => $data['notes'] ?? '',
         ':status' => 'pending',
         ':createdAt' => date('Y-m-d\TH:i:s'),
     ]);
 
-    $donationStmt = $pdo->prepare('UPDATE FoodDonation SET requestCount = requestCount + 1 WHERE donationId = :id');
-    $donationStmt->execute([':id' => $data['donationId']]);
+    $donationStmt = $pdo->prepare('UPDATE FoodDonation SET requestCount = requestCount + 1 WHERE donation_id = :id OR donationId = :legacy');
+    $donationStmt->execute([':id' => $donationIdInt, ':legacy' => $data['donationId']]);
 
-    $donationRow = $pdo->prepare('SELECT * FROM FoodDonation WHERE donationId = :id LIMIT 1');
-    $donationRow->execute([':id' => $data['donationId']]);
+    $donationRow = $pdo->prepare('SELECT * FROM FoodDonation WHERE donation_id = :id OR donationId = :legacy LIMIT 1');
+    $donationRow->execute([':id' => $donationIdInt, ':legacy' => $data['donationId']]);
     $donation = $donationRow->fetch();
     if ($donation) {
-        createNotification($pdo, $donation['donorId'], 'A recipient submitted a new request for "' . $donation['title'] . '".');
+        $donorId = $donation['donor_id'] ?? resolveUserId($pdo, $donation['donorId'] ?? null);
+        if ($donorId) {
+            createNotification($pdo, 'U-' . $donorId, 'A recipient submitted a new request for "' . ($donation['title'] ?? $data['donationId']) . '".');
+        }
     }
 
-    $created = $pdo->prepare('SELECT * FROM Request WHERE requestId = :id LIMIT 1');
+    $created = $pdo->prepare('SELECT request_id AS requestId, donation_id AS donationId, recipient_id AS recipientId, recipientId AS legacyRecipientId, recipientName, requested_qty AS requestedQuantity, peopleToServe, notes, status, created_at AS createdAt FROM Request WHERE requestId = :id LIMIT 1');
     $created->execute([':id' => $requestId]);
     jsonResponse(normalizeRequestRow($created->fetch()), 201);
 }

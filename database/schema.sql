@@ -1,187 +1,276 @@
-CREATE DATABASE IF NOT EXISTS food_waste_management;
+-- =====================================================================
+-- FOOD WASTE MANAGEMENT SYSTEM - FINAL CONSOLIDATED SCHEMA
+-- This single file includes the original 15-table design PLUS every
+-- ALTER TABLE change made afterward, already merged in. Run this once
+-- on a fresh database instead of running the original script + separate
+-- ALTER scripts one by one.
+-- Engine: MySQL (XAMPP / phpMyAdmin compatible)
+-- =====================================================================
+
+DROP DATABASE IF EXISTS food_waste_management;
+CREATE DATABASE food_waste_management CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE food_waste_management;
 
-DROP TABLE IF EXISTS AuditLog;
-DROP TABLE IF EXISTS Notification;
-DROP TABLE IF EXISTS Feedback;
-DROP TABLE IF EXISTS WasteLog;
-DROP TABLE IF EXISTS PickupAssignment;
-DROP TABLE IF EXISTS Request;
-DROP TABLE IF EXISTS DonationImage;
-DROP TABLE IF EXISTS FoodDonation;
-DROP TABLE IF EXISTS FoodCategory;
-DROP TABLE IF EXISTS AppUser;
-
+-- =====================================================================
+-- 1. APPUSER (Base entity for ISA hierarchy)
+--    + reset_token, reset_expires (added for Forgot Password feature)
+-- =====================================================================
 CREATE TABLE AppUser (
-    userId VARCHAR(50) PRIMARY KEY,
-    role ENUM('donor', 'recipient', 'volunteer', 'admin') NOT NULL,
-    name VARCHAR(150) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    phone VARCHAR(50) DEFAULT NULL,
-    donor_type VARCHAR(100) DEFAULT NULL,
+    user_id       INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(100) NOT NULL,
+    email         VARCHAR(150) NOT NULL UNIQUE,
+    password      VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) DEFAULT NULL,
+    role          ENUM('donor', 'volunteer', 'admin', 'recipient') NOT NULL,
+    phone         VARCHAR(50) DEFAULT NULL,
+    donor_type    VARCHAR(100) DEFAULT NULL,
     recipient_type VARCHAR(100) DEFAULT NULL,
     organization_name VARCHAR(200) DEFAULT NULL,
-    address VARCHAR(255) DEFAULT NULL,
-    vehicle_type VARCHAR(100) DEFAULT NULL,
-    availability VARCHAR(255) DEFAULT NULL,
-    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+    address       VARCHAR(255) DEFAULT NULL,
+    vehicle_type  VARCHAR(100) DEFAULT NULL,
+    availability  VARCHAR(255) DEFAULT NULL,
+    status        VARCHAR(32) NOT NULL DEFAULT 'active',
+    reset_token   VARCHAR(64)  NULL DEFAULT NULL,
+    reset_expires DATETIME     NULL DEFAULT NULL,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    userId        VARCHAR(50) UNIQUE NULL,
+    userIdLegacy  VARCHAR(50) UNIQUE NULL
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 2. ADDRESS (standalone, referenced by Donor + FoodDonation pickup)
+-- =====================================================================
+CREATE TABLE Address (
+    address_id   INT AUTO_INCREMENT PRIMARY KEY,
+    street       VARCHAR(150) NOT NULL,
+    city         VARCHAR(80) NOT NULL,
+    state        VARCHAR(80),
+    postal_code  VARCHAR(20)
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 3. DONOR (ISA subclass of AppUser)
+-- =====================================================================
+CREATE TABLE Donor (
+    donor_id     INT PRIMARY KEY,
+    donor_type   VARCHAR(100) DEFAULT 'individual',
+    org_name     VARCHAR(150),
+    address_id   INT,
+    FOREIGN KEY (donor_id) REFERENCES AppUser(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (address_id) REFERENCES Address(address_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 4. VOLUNTEER (ISA subclass of AppUser)
+-- =====================================================================
+CREATE TABLE Volunteer (
+    volunteer_id  INT PRIMARY KEY,
+    vehicle_type  VARCHAR(50),
+    availability  VARCHAR(255) DEFAULT 'available',
+    FOREIGN KEY (volunteer_id) REFERENCES AppUser(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 5. ADMIN (ISA subclass of AppUser)
+-- =====================================================================
+CREATE TABLE Admin (
+    admin_id         INT PRIMARY KEY,
+    permission_level ENUM('super', 'moderator', 'support') DEFAULT 'moderator',
+    FOREIGN KEY (admin_id) REFERENCES AppUser(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 6. RECIPIENT (ISA subclass of AppUser)
+-- =====================================================================
+CREATE TABLE Recipient (
+    recipient_id    INT PRIMARY KEY,
+    recipient_type  VARCHAR(100) DEFAULT 'individual',
+    org_name        VARCHAR(150),
+    FOREIGN KEY (recipient_id) REFERENCES AppUser(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 7. FOODCATEGORY
+-- =====================================================================
 CREATE TABLE FoodCategory (
-    categoryId VARCHAR(50) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
+    category_id    INT AUTO_INCREMENT PRIMARY KEY,
+    category_name  VARCHAR(80) NOT NULL UNIQUE,
+    categoryId     VARCHAR(50) UNIQUE NULL
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 8. FOODDONATION (central entity)
+-- =====================================================================
 CREATE TABLE FoodDonation (
-    donationId VARCHAR(50) PRIMARY KEY,
-    donorId VARCHAR(50) NOT NULL,
-    donorName VARCHAR(150) NOT NULL,
-    title VARCHAR(200) NOT NULL,
-    categoryId VARCHAR(50) NOT NULL,
-    description TEXT,
-    quantity INT NOT NULL,
-    unit VARCHAR(50) NOT NULL,
-    preparedAt DATETIME NOT NULL,
-    expiresAt DATETIME NOT NULL,
-    pickupAddress VARCHAR(255) NOT NULL,
-    contact VARCHAR(100) DEFAULT NULL,
-    notes TEXT,
-    status ENUM('available', 'pending', 'claimed', 'delivered', 'expired', 'cancelled') NOT NULL DEFAULT 'available',
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    requestCount INT NOT NULL DEFAULT 0,
-    FOREIGN KEY (donorId) REFERENCES AppUser(userId),
-    FOREIGN KEY (categoryId) REFERENCES FoodCategory(categoryId)
-);
+    donation_id   INT AUTO_INCREMENT PRIMARY KEY,
+    donor_id      INT NOT NULL,
+    category_id   INT,
+    address_id    INT,
+    title         VARCHAR(150) NOT NULL,
+    quantity      DECIMAL(10,2) NOT NULL,
+    unit          VARCHAR(30) NOT NULL,
+    expiry_time   DATETIME NOT NULL,
+    status        ENUM('available', 'requested', 'assigned', 'delivered', 'wasted', 'expired', 'pending', 'claimed', 'cancelled') DEFAULT 'available',
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    donationId    VARCHAR(50) UNIQUE NULL,
+    donorId       VARCHAR(50) NULL,
+    donorName     VARCHAR(150) NULL,
+    categoryId    VARCHAR(50) NULL,
+    description   TEXT NULL,
+    preparedAt    DATETIME NULL,
+    expiresAt     DATETIME NULL,
+    pickupAddress VARCHAR(255) NULL,
+    contact       VARCHAR(100) NULL,
+    notes         TEXT NULL,
+    requestCount  INT NOT NULL DEFAULT 0,
+    createdAt     DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (donor_id) REFERENCES Donor(donor_id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES FoodCategory(category_id) ON DELETE SET NULL,
+    FOREIGN KEY (address_id) REFERENCES Address(address_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 9. DONATIONIMAGE (weak entity)
+-- =====================================================================
 CREATE TABLE DonationImage (
-    imageId VARCHAR(50) PRIMARY KEY,
-    donationId VARCHAR(50) NOT NULL,
-    imageUrl VARCHAR(255) NOT NULL,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (donationId) REFERENCES FoodDonation(donationId)
-);
+    image_id     INT AUTO_INCREMENT PRIMARY KEY,
+    donation_id  INT NOT NULL,
+    image_url    VARCHAR(255) NOT NULL,
+    FOREIGN KEY (donation_id) REFERENCES FoodDonation(donation_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 10. REQUEST
+-- =====================================================================
 CREATE TABLE Request (
-    requestId VARCHAR(50) PRIMARY KEY,
-    donationId VARCHAR(50) NOT NULL,
-    recipientId VARCHAR(50) NOT NULL,
-    recipientName VARCHAR(150) NOT NULL,
-    requestedQuantity INT NOT NULL,
-    peopleToServe INT NOT NULL,
-    notes TEXT,
-    status ENUM('pending', 'accepted', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (donationId) REFERENCES FoodDonation(donationId),
-    FOREIGN KEY (recipientId) REFERENCES AppUser(userId)
-);
+    request_id     INT AUTO_INCREMENT PRIMARY KEY,
+    recipient_id   INT NOT NULL,
+    donation_id    INT NOT NULL,
+    requested_qty  DECIMAL(10,2) NOT NULL,
+    status         ENUM('pending', 'approved', 'rejected', 'fulfilled', 'accepted', 'cancelled') DEFAULT 'pending',
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    requestId      VARCHAR(50) UNIQUE NULL,
+    recipientId    VARCHAR(50) NULL,
+    recipientName  VARCHAR(150) NULL,
+    requestedQuantity INT NULL,
+    peopleToServe  INT NULL,
+    notes          TEXT NULL,
+    createdAt      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (recipient_id) REFERENCES Recipient(recipient_id) ON DELETE CASCADE,
+    FOREIGN KEY (donation_id) REFERENCES FoodDonation(donation_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 11. PICKUPASSIGNMENT
+-- =====================================================================
 CREATE TABLE PickupAssignment (
-    assignmentId VARCHAR(50) PRIMARY KEY,
-    requestId VARCHAR(50) NOT NULL,
-    donationId VARCHAR(50) NOT NULL,
-    volunteerId VARCHAR(50) NOT NULL,
-    donorName VARCHAR(150) NOT NULL,
-    recipientName VARCHAR(150) NOT NULL,
-    pickupAddress VARCHAR(255) NOT NULL,
-    deliveryAddress VARCHAR(255) NOT NULL,
-    pickupTime DATETIME DEFAULT NULL,
-    deliveryTime DATETIME DEFAULT NULL,
-    status ENUM('assigned', 'picked_up', 'in_transit', 'delivered') NOT NULL DEFAULT 'assigned',
-    FOREIGN KEY (requestId) REFERENCES Request(requestId),
-    FOREIGN KEY (donationId) REFERENCES FoodDonation(donationId),
-    FOREIGN KEY (volunteerId) REFERENCES AppUser(userId)
-);
+    assignment_id  INT AUTO_INCREMENT PRIMARY KEY,
+    volunteer_id   INT NOT NULL,
+    request_id     INT NOT NULL,
+    pickup_time    DATETIME,
+    delivery_time  DATETIME,
+    status         ENUM('assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled') DEFAULT 'assigned',
+    assignmentId   VARCHAR(50) UNIQUE NULL,
+    donationId     VARCHAR(50) NULL,
+    volunteerId    VARCHAR(50) NULL,
+    donorName      VARCHAR(150) NULL,
+    recipientName  VARCHAR(150) NULL,
+    pickupAddress  VARCHAR(255) NULL,
+    deliveryAddress VARCHAR(255) NULL,
+    pickupTime     DATETIME NULL,
+    deliveryTime   DATETIME NULL,
+    FOREIGN KEY (volunteer_id) REFERENCES Volunteer(volunteer_id) ON DELETE CASCADE,
+    FOREIGN KEY (request_id) REFERENCES Request(request_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 12. WASTELOG (weak entity)
+-- =====================================================================
 CREATE TABLE WasteLog (
-    wasteLogId VARCHAR(50) PRIMARY KEY,
-    donationId VARCHAR(50) NOT NULL,
-    categoryId VARCHAR(50) NOT NULL,
-    quantity INT NOT NULL,
-    unit VARCHAR(50) NOT NULL,
-    reason VARCHAR(255) NOT NULL,
-    expiresAt DATETIME NOT NULL,
-    loggedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (donationId) REFERENCES FoodDonation(donationId),
-    FOREIGN KEY (categoryId) REFERENCES FoodCategory(categoryId)
-);
+    waste_id         INT AUTO_INCREMENT PRIMARY KEY,
+    donation_id      INT NOT NULL,
+    quantity_wasted  DECIMAL(10,2) NOT NULL,
+    reason           VARCHAR(255),
+    logged_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (donation_id) REFERENCES FoodDonation(donation_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-CREATE TABLE Feedback (
-    feedbackId VARCHAR(50) PRIMARY KEY,
-    donationId VARCHAR(50) NOT NULL,
-    fromUserId VARCHAR(50) NOT NULL,
-    toUserId VARCHAR(50) NOT NULL,
-    rating INT NOT NULL,
-    review TEXT,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (donationId) REFERENCES FoodDonation(donationId),
-    FOREIGN KEY (fromUserId) REFERENCES AppUser(userId),
-    FOREIGN KEY (toUserId) REFERENCES AppUser(userId)
-);
-
+-- =====================================================================
+-- 13. NOTIFICATION
+-- =====================================================================
 CREATE TABLE Notification (
-    notificationId VARCHAR(50) PRIMARY KEY,
-    userId VARCHAR(50) NOT NULL,
-    message TEXT NOT NULL,
-    isRead TINYINT(1) NOT NULL DEFAULT 0,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES AppUser(userId)
-);
+    notification_id  INT AUTO_INCREMENT PRIMARY KEY,
+    user_id          INT NOT NULL,
+    donation_id      INT,
+    message          VARCHAR(255) NOT NULL,
+    is_read          BOOLEAN DEFAULT FALSE,
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notificationId   VARCHAR(50) UNIQUE NULL,
+    userId           VARCHAR(50) NULL,
+    isRead           BOOLEAN DEFAULT FALSE,
+    createdAt        DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES AppUser(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (donation_id) REFERENCES FoodDonation(donation_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
+-- =====================================================================
+-- 14. FEEDBACK
+-- =====================================================================
+CREATE TABLE Feedback (
+    feedback_id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id             INT NOT NULL,
+    donation_id         INT NOT NULL,
+    request_id          INT NULL,
+    rating              TINYINT CHECK (rating BETWEEN 1 AND 5),
+    comments            VARCHAR(500),
+    volunteer_id        INT NULL,
+    volunteer_rating    TINYINT NULL,
+    volunteer_comments  VARCHAR(500) NULL,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    feedbackId          VARCHAR(50) UNIQUE NULL,
+    fromUserId          VARCHAR(50) NULL,
+    toUserId            VARCHAR(50) NULL,
+    review              TEXT NULL,
+    createdAt           DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES AppUser(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (donation_id) REFERENCES FoodDonation(donation_id) ON DELETE CASCADE,
+    FOREIGN KEY (request_id) REFERENCES Request(request_id) ON DELETE CASCADE,
+    FOREIGN KEY (volunteer_id) REFERENCES Volunteer(volunteer_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- =====================================================================
+-- 15. AUDITLOG
+-- =====================================================================
 CREATE TABLE AuditLog (
-    logId VARCHAR(50) PRIMARY KEY,
-    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    userName VARCHAR(150) NOT NULL,
-    action VARCHAR(100) NOT NULL,
-    entity VARCHAR(150) NOT NULL,
-    description TEXT NOT NULL
-);
+    log_id       INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    action_type  VARCHAR(50) NOT NULL,
+    target_table VARCHAR(50) NOT NULL,
+    target_id    INT,
+    action_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    logId        VARCHAR(50) UNIQUE NULL,
+    timestamp    DATETIME DEFAULT CURRENT_TIMESTAMP,
+    userName     VARCHAR(150) NULL,
+    action       VARCHAR(100) NULL,
+    entity       VARCHAR(150) NULL,
+    description  TEXT NULL,
+    FOREIGN KEY (user_id) REFERENCES AppUser(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
-INSERT INTO FoodCategory (categoryId, name) VALUES
-('C1', 'Cooked Meal'),
-('C2', 'Packaged Food'),
-('C3', 'Produce'),
-('C4', 'Bakery');
+-- =====================================================================
+-- INDEXES for common lookups
+-- =====================================================================
+CREATE INDEX idx_donation_status ON FoodDonation(status);
+CREATE INDEX idx_donation_expiry ON FoodDonation(expiry_time);
+CREATE INDEX idx_request_status ON Request(status);
+CREATE INDEX idx_notification_user ON Notification(user_id, is_read);
+CREATE INDEX idx_auditlog_user ON AuditLog(user_id);
 
-INSERT INTO AppUser (userId, role, name, email, password_hash, phone, donor_type, recipient_type, organization_name, address, vehicle_type, availability, status, created_at) VALUES
-('U-D1', 'donor', 'Amina Rahman', 'donor@demo.com', '$2y$10$JF8XQl87md/pphsrjcCgxeUWO1F72rImURDVkrpbOqIGuiZdg5qbW', '+880 1711-000111', 'Restaurant', NULL, 'Green Leaf Kitchen', 'House 12, Road 5, Dhanmondi, Dhaka', NULL, NULL, 'active', '2026-06-14 10:00:00'),
-('U-R1', 'recipient', 'Karim Hasan', 'recipient@demo.com', '$2y$10$JF8XQl87md/pphsrjcCgxeUWO1F72rImURDVkrpbOqIGuiZdg5qbW', '+880 1811-222333', NULL, 'NGO', 'Hope Shelter Trust', '45 Mirpur Road, Dhaka', NULL, NULL, 'active', '2026-06-20 09:30:00'),
-('U-V1', 'volunteer', 'Tanvir Alam', 'volunteer@demo.com', '$2y$10$JF8XQl87md/pphsrjcCgxeUWO1F72rImURDVkrpbOqIGuiZdg5qbW', '+880 1911-444555', NULL, NULL, NULL, '22 Banani, Dhaka', 'Motorbike', 'Evenings & weekends', 'active', '2026-07-02 14:15:00'),
-('U-A1', 'admin', 'System Admin', 'admin@demo.com', '$2y$10$JF8XQl87md/pphsrjcCgxeUWO1F72rImURDVkrpbOqIGuiZdg5qbW', '+880 1611-777888', NULL, NULL, NULL, 'Sufra HQ, Gulshan, Dhaka', NULL, NULL, 'active', '2026-05-01 09:00:00');
+-- ===============================================================
+-- NOTE: Mock/demo seed data has been moved to database/extramockdata.sql
+-- Keep this file as the clean database schema only.
+-- ===============================================================
 
-INSERT INTO FoodDonation (
-    donationId, donorId, donorName, title, categoryId, description, quantity, unit, preparedAt, expiresAt,
-    pickupAddress, contact, notes, status, createdAt, requestCount
-) VALUES
-('D-1001', 'U-D1', 'Green Leaf Kitchen', 'Vegetable Biryani Trays', 'C1', 'Freshly cooked vegetable biryani, prepared for a cancelled event.', 12, 'trays', '2026-09-02 10:00:00', '2026-09-02 20:00:00', 'House 12, Road 5, Dhanmondi, Dhaka', '+880 1711-000111', NULL, 'available', '2026-09-02 10:15:00', 2),
-('D-1002', 'U-D1', 'Green Leaf Kitchen', 'Packaged Sandwiches', 'C2', 'Sealed sandwich packs left over from a catering order.', 30, 'packs', '2026-09-02 09:00:00', '2026-09-03 09:00:00', 'House 12, Road 5, Dhanmondi, Dhaka', '+880 1711-000111', NULL, 'pending', '2026-09-02 09:20:00', 1),
-('D-1003', 'U-D1', 'Green Leaf Kitchen', 'Mixed Seasonal Produce', 'C3', 'Excess vegetables from the morning market delivery.', 18, 'kg', '2026-09-01 08:00:00', '2026-09-01 22:00:00', 'House 12, Road 5, Dhanmondi, Dhaka', '+880 1711-000111', NULL, 'expired', '2026-09-01 08:10:00', 0),
-('D-1004', 'U-D1', 'Green Leaf Kitchen', 'Bread & Bakery Assortment', 'C4', 'End-of-day unsold bread and pastries, still fresh.', 24, 'pieces', '2026-09-02 18:00:00', '2026-09-03 08:00:00', 'House 12, Road 5, Dhanmondi, Dhaka', '+880 1711-000111', NULL, 'delivered', '2026-08-31 18:10:00', 3);
-
-INSERT INTO Request (requestId, donationId, recipientId, recipientName, requestedQuantity, peopleToServe, notes, status, createdAt) VALUES
-('RQ-1', 'D-1001', 'U-R1', 'Hope Shelter Trust', 6, 25, 'Serving evening meal at our shelter.', 'pending', '2026-09-02 11:00:00'),
-('RQ-2', 'D-1004', 'U-R1', 'Hope Shelter Trust', 24, 20, 'Breakfast for residents.', 'accepted', '2026-08-31 19:00:00'),
-('RQ-3', 'D-1002', 'U-R1', 'Hope Shelter Trust', 10, 10, 'Could pick up same afternoon.', 'rejected', '2026-09-02 09:45:00');
-
-INSERT INTO PickupAssignment (assignmentId, requestId, donationId, volunteerId, donorName, recipientName, pickupAddress, deliveryAddress, pickupTime, deliveryTime, status) VALUES
-('PA-1', 'RQ-2', 'D-1004', 'U-V1', 'Green Leaf Kitchen', 'Hope Shelter Trust', 'House 12, Road 5, Dhanmondi, Dhaka', '45 Mirpur Road, Dhaka', '2026-08-31 19:30:00', '2026-08-31 20:15:00', 'delivered');
-
-INSERT INTO Notification (notificationId, userId, message, isRead, createdAt) VALUES
-('N-1', 'U-D1', 'Your donation "Vegetable Biryani Trays" received a new request.', 0, '2026-09-02 11:00:00'),
-('N-2', 'U-R1', 'Your request for "Bread & Bakery Assortment" was accepted.', 1, '2026-08-31 19:05:00'),
-('N-3', 'U-V1', 'You have been assigned a new pickup.', 1, '2026-08-31 19:10:00'),
-('N-4', 'U-D1', '"Mixed Seasonal Produce" expired without being claimed.', 0, '2026-09-01 22:05:00'),
-('N-5', 'U-R1', 'Your request for "Vegetable Biryani Trays" is awaiting donor review.', 0, '2026-09-02 11:00:00'),
-('N-6', 'U-R1', 'Your request for "Packaged Sandwiches" was declined by the donor.', 1, '2026-09-02 10:00:00');
-
-INSERT INTO Feedback (feedbackId, donationId, fromUserId, toUserId, rating, review, createdAt) VALUES
-('F-1', 'D-1004', 'U-R1', 'U-D1', 5, 'Well packed and right on time. Thank you!', '2026-08-31 21:00:00');
-
-INSERT INTO WasteLog (wasteLogId, donationId, categoryId, quantity, unit, reason, expiresAt, loggedAt) VALUES
-('W-1', 'D-1003', 'C3', 18, 'kg', 'No requests before expiry', '2026-09-01 22:00:00', '2026-09-01 22:05:00');
-
-INSERT INTO AuditLog (logId, timestamp, userName, action, entity, description) VALUES
-('AL-1', '2026-09-02 11:00:00', 'Karim Hasan', 'Submitted request', 'Request RQ-1', 'Requested 6 trays from "Vegetable Biryani Trays".'),
-('AL-2', '2026-09-01 22:05:00', 'System', 'Logged waste', 'Donation D-1003', '"Mixed Seasonal Produce" expired unclaimed and was logged as waste.'),
-('AL-3', '2026-08-31 19:05:00', 'Amina Rahman', 'Accepted request', 'Request RQ-2', 'Accepted Hope Shelter Trust\'s request for "Bread & Bakery Assortment".');
+-- =====================================================================
+-- END OF FINAL CONSOLIDATED SCHEMA
+-- =====================================================================

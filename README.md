@@ -67,7 +67,9 @@ The frontend is a role-based web app with reusable components and page-specific 
 The backend is implemented in PHP and uses MySQL through PDO for data access. Session-based authentication is handled through PHP session cookies.
 
 ### Database
-The schema and seed data are stored in `database/schema.sql`. This creates the main tables and demo user records for the donor, recipient, volunteer, and admin roles.
+The live database structure is stored in `database/schema.sql`. This file contains only the table definitions.
+
+Optional demo/mock data is stored separately in `database/extramockdata.sql` and can be imported after the schema is created.
 
 ## XAMPP setup
 
@@ -77,9 +79,11 @@ The schema and seed data are stored in `database/schema.sql`. This creates the m
    `C:/xampp/htdocs/food-waste-management`
 4. Open phpMyAdmin at:
    `http://localhost/phpmyadmin`
-5. Import the SQL file:
+5. Import the schema file:
    `database/schema.sql`
-6. Open the app in the browser:
+6. If you want the demo/mock data set, import:
+   `database/extramockdata.sql`
+7. Open the app in the browser:
    `http://localhost/food-waste-management/login.html`
 
 ## Database configuration

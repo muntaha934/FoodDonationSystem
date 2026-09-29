@@ -36,11 +36,12 @@ $vehicleType = trim((string) ($data['vehicleType'] ?? ''));
 $availability = trim((string) ($data['availability'] ?? ''));
 $createdAt = date('Y-m-d\TH:i:s');
 
+$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 $stmt = $pdo->prepare('INSERT INTO AppUser (
-    userId, role, name, email, password_hash, phone, donor_type, recipient_type,
+    userId, role, name, email, password, password_hash, phone, donor_type, recipient_type,
     organization_name, address, vehicle_type, availability, status, created_at
 ) VALUES (
-    :userId, :role, :name, :email, :password_hash, :phone, :donor_type,
+    :userId, :role, :name, :email, :password, :password_hash, :phone, :donor_type,
     :recipient_type, :organization_name, :address, :vehicle_type, :availability,
     :status, :created_at
 )');
@@ -50,7 +51,8 @@ $stmt->execute([
     ':role' => $role,
     ':name' => $name,
     ':email' => $email,
-    ':password_hash' => password_hash($password, PASSWORD_DEFAULT),
+    ':password' => $hashedPassword,
+    ':password_hash' => $hashedPassword,
     ':phone' => $phone,
     ':donor_type' => $donorType,
     ':recipient_type' => $recipientType,
@@ -61,6 +63,22 @@ $stmt->execute([
     ':status' => 'active',
     ':created_at' => $createdAt,
 ]);
+
+$userIdInt = (int) $pdo->lastInsertId();
+
+if ($role === 'donor') {
+    $pdo->prepare('INSERT INTO Donor (donor_id, donor_type, org_name) VALUES (:id, :type, :org_name) ON DUPLICATE KEY UPDATE donor_type = VALUES(donor_type), org_name = VALUES(org_name)')
+        ->execute([':id' => $userIdInt, ':type' => $donorType ?: 'individual', ':org_name' => $organizationName ?: null]);
+} elseif ($role === 'recipient') {
+    $pdo->prepare('INSERT INTO Recipient (recipient_id, recipient_type, org_name) VALUES (:id, :type, :org_name) ON DUPLICATE KEY UPDATE recipient_type = VALUES(recipient_type), org_name = VALUES(org_name)')
+        ->execute([':id' => $userIdInt, ':type' => $recipientType ?: 'individual', ':org_name' => $organizationName ?: null]);
+} elseif ($role === 'volunteer') {
+    $pdo->prepare('INSERT INTO Volunteer (volunteer_id, vehicle_type, availability) VALUES (:id, :vehicle, :availability) ON DUPLICATE KEY UPDATE vehicle_type = VALUES(vehicle_type), availability = VALUES(availability)')
+        ->execute([':id' => $userIdInt, ':vehicle' => $vehicleType ?: null, ':availability' => $availability ?: 'available']);
+} elseif ($role === 'admin') {
+    $pdo->prepare('INSERT INTO Admin (admin_id, permission_level) VALUES (:id, :level) ON DUPLICATE KEY UPDATE permission_level = VALUES(permission_level)')
+        ->execute([':id' => $userIdInt, ':level' => 'moderator']);
+}
 
 $created = $pdo->prepare('SELECT * FROM AppUser WHERE userId = :id LIMIT 1');
 $created->execute([':id' => $userId]);

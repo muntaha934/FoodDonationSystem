@@ -44,24 +44,40 @@ if ($method === 'POST') {
     }
 
     $pdo = getDb();
+    $donorUserId = resolveUserId($pdo, $data['donorId'] ?? $user['userId'] ?? null) ?? (int) ($user['user_id'] ?? 0);
+    $categoryId = resolveCategoryId($pdo, $data['categoryId']);
+
+    if ($donorUserId === null || $donorUserId === 0) {
+        jsonResponse(['message' => 'Valid donor not found.'], 400);
+    }
+
+    $donorUser = $pdo->prepare('SELECT * FROM AppUser WHERE user_id = :id LIMIT 1');
+    $donorUser->execute([':id' => $donorUserId]);
+    $donorRow = $donorUser->fetch();
+    if (!$donorRow) {
+        jsonResponse(['message' => 'Donor user not found.'], 400);
+    }
+
     $donationId = generateNextId($pdo, 'FoodDonation', 'D', 'donationId');
     $stmt = $pdo->prepare('INSERT INTO FoodDonation (
-        donationId, donorId, donorName, title, categoryId, description, quantity, unit, preparedAt, expiresAt,
+        donationId, donor_id, donorId, donorName, title, category_id, categoryId, description, quantity, unit, preparedAt, expiresAt,
         pickupAddress, contact, notes, status, createdAt, requestCount
     ) VALUES (
-        :donationId, :donorId, :donorName, :title, :categoryId, :description, :quantity, :unit,
+        :donationId, :donor_id, :donorId, :donorName, :title, :category_id, :categoryId, :description, :quantity, :unit,
         :preparedAt, :expiresAt, :pickupAddress, :contact, :notes, :status, :createdAt, :requestCount
     )');
 
-    $donorName = $user['name'] ?? $data['donorName'] ?? 'Unknown donor';
+    $donorName = $donorRow['name'] ?? $data['donorName'] ?? 'Unknown donor';
     $stmt->execute([
         ':donationId' => $donationId,
-        ':donorId' => $data['donorId'],
+        ':donor_id' => $donorUserId,
+        ':donorId' => $data['donorId'] ?? $user['userId'] ?? 'U-' . $donorUserId,
         ':donorName' => $donorName,
         ':title' => $data['title'],
+        ':category_id' => $categoryId,
         ':categoryId' => $data['categoryId'],
         ':description' => $data['description'] ?? '',
-        ':quantity' => (int) $data['quantity'],
+        ':quantity' => (float) $data['quantity'],
         ':unit' => $data['unit'],
         ':preparedAt' => $data['preparedAt'],
         ':expiresAt' => $data['expiresAt'],

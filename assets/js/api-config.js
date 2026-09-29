@@ -29,10 +29,10 @@ const API_CONFIG = {
   // htdocs/food-waste-management and PHP files live in /api.
   baseUrl: "/food-waste-management/api",
 
-  // Flip to false once real endpoints exist. Kept here (rather
-  // than deleted) so mock data stays available for demos/testing
-  // even after the backend is live.
-  useMockData: true,
+  // Backend mode is enabled for the live MySQL implementation.
+  // Set to true only if you intentionally want the mock/localStorage
+  // fallback for demos or offline testing.
+  useMockData: false,
 };
 
 /**
